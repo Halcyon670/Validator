@@ -1,0 +1,48 @@
+Validator Change Log:
+
+-v2.2
+
+Bug Fixes:
+    Fixed the tool to be able to reformat MySQL queries.
+    Fixed a rare bug that caused the tool to fail if there were too many metrics.
+
+-v2.1
+
+New Features:
+	Added in a widget to automate the chair investigation reformatting.
+	Now works with COUNT aggregates.
+
+Bug Fixes:
+	Rewrote large portions of the code for ease of readability and debugging.
+    Fixed a rare bug in which the tool would not recognize a join, thereby counting fewer joins than there really were.
+	Fixed the Quit button.
+
+-v2.0
+
+New Features:
+	Most obviously, a UI. No more pasting into a .txt or using a command line.
+	Introduced a join reordering widget. You can now reorder the joins on the query as you please.
+
+Bug Fixes:
+	Rewrote some of the query reformat logic to make it more efficient.
+	
+-v1.2
+
+New Features:
+	Implemented a loop so that the program doesn't need to be closed every time. This should hold things over until some more complex features are implemented.
+
+Bug Fixes:
+	cqa is now moved to the end of the join list in the same way that BIS2_GEO_chairs is. This should allow for more clarity in DVing quartals.
+
+-v1.1
+
+New Features:
+	Implemented new message to make it clear that the SQL query is being copied to your clipboard.
+	Included this doc and the source code.
+	
+Bug Fixes:
+	Fixed a bug in which "WHERE" was sometimes being left out of the WHERE clause.
+	Completely rewrote the query generator. Much simpler and got rid of all the little issues with WHERE and restrictions.
+
+-v1.0
+Initial Release
