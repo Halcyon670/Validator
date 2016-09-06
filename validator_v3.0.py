@@ -37,17 +37,20 @@ class StartPage(tkinter.Frame):
     def __init__(self, parent, controller):
         tkinter.Frame.__init__(self, parent)
         controller.minsize(width=1100, height=700)
-        label = tkinter.Label(self, text='Welcome to the Validator v3.0!\n\n\n\n', font='bold')
-        label.pack(pady=10, padx=10)
+        label = tkinter.Label(self, text='Validator\n', font='bold')
+        label.grid(column=1, row=0, pady=10, padx=10)
 
-        changelog = tkinter.Label(self, text='v3.0\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n')
-        changelog.pack()
+        changelog = tkinter.Label(self, font=('Times New Roman', 12), text='Current Release: v3.0\n\nThis is a complete overhaul of the original validator. The purpose of this one is to connect directly to the database and automate the entire process.\n\nAny issues, ideas, death threats, etc. can be sent to cory.clanin@vizexplorer.com', relief='ridge', width=110, height=25)
+        changelog.grid(column=1, row=1, sticky='ew', padx=50)
 
         singleval = tkinter.Button(self, text="Begin!", pady=10, padx=10, fg="black", command=lambda: controller.show_frame(DocList))
-        singleval.pack(pady=10, padx=10)
+        singleval.grid(column=1, row=2, pady=10, padx=473, sticky='w')
 
         quitapp = tkinter.Button(self, text="Quit", fg="black", pady=10, padx=10, command=lambda: exit())
-        quitapp.pack(pady=10, padx=10)
+        quitapp.grid(column=1, row=3, pady=10, padx=10)
+
+        settings = tkinter.Button(self, text="Settings", fg="black", pady=10, padx=10)
+        settings.grid(column=1, row=2, pady=10, sticky='e', padx=473)
 
 
 class DocList(tkinter.Frame):
