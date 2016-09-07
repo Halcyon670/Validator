@@ -98,6 +98,7 @@ class DocList(tkinter.Frame):
         DocList.populate(self)
         DocList.listbox.bind('<<ListboxSelect>>', self.updatedoclabel)
 
+    # Populates the listboxes from docxml.xml. DocList.listbox must be empty for this to work properly.
     def populate(self):
         file = open('docxml.xml', 'r')
         doclist = ''
@@ -130,6 +131,7 @@ class DocList(tkinter.Frame):
             DocList.listbox.insert(index, docnames[i])
             index += 1
 
+    # Displays doc information on the doclabel. This only does this one at a time, and is set to a trigger for clicking on a doc.
     def updatedoclabel(self, event):
 
         file = open('docxml.xml', 'r')
@@ -164,6 +166,7 @@ class DocList(tkinter.Frame):
 
         DocList.text.set(temp)
 
+    # Moves documents from listbox to addeddoclist. Tied to a button.
     def moveright(self):
         if DocList.listbox.curselection() is not None:
             movevar = 0
@@ -190,6 +193,7 @@ class DocList(tkinter.Frame):
             DocList.listbox.itemconfig(movevar, {'bg': 'grey'})
             DocList.moveint += 1
 
+    # Moves documents from addeddoclist to listbox. Tied to a button.
     def moveleft(self):
         if DocList.addeddoclistbox.curselection() is not None:
             movevar = 0
@@ -215,6 +219,7 @@ class DocList(tkinter.Frame):
             DocList.listbox.itemconfig(docids.index(DocList.valdocs[movevar]), {'bg': 'white'})
             DocList.valdocs.remove(DocList.valdocs[movevar])
 
+    # Refreshes docxml, then repopulates.
     def refresh(self):
         REST.getcookie(REST)
         REST.authentify(REST)

@@ -401,13 +401,64 @@ class Isolation:
                 break
             if temp in ['AND ', 'OR ', 'NOT '] and parencount == 0:
                 wherefinal.append(tempfull)
-                wherefinal.append(temp)
+                # wherefinal.append(temp)
                 tempfull = ''
             else:
                 tempfull += temp
 
         return wherefinal
 
+    def whereand(self, sql):
+        where = SectionStrip.stripwhere(SectionStrip, sql)
+
+        # Remove the WHERE keyword from the beginning
+        where = where[6::]
+
+        # Remove the outermost parentheses
+        if where[0] and where[1] == '(':
+            where = Formatting.parensubstring(Formatting, where, 1)
+
+        # Cycle through the string, word by word, stopping at any AND / OR / NOT that is not whithin parentheses, or the end of line.
+        wherefinal = {}
+        pos = 0
+        parencount = 0
+        tempfull = ''
+        key = 'start'
+        while True:
+            temp = ''
+
+            while True:
+
+                if pos >= len(where):
+                    break
+                elif where[pos] == ' ':
+                    temp += where[pos]
+                    pos += 1
+                    break
+                elif where[pos] == '(':
+                    parencount += 1
+                    temp += where[pos]
+                    pos += 1
+                elif where[pos] == ')':
+                    parencount -= 1
+                    temp += where[pos]
+                    pos += 1
+                else:
+                    temp += where[pos]
+                    pos += 1
+
+            if pos >= len(where):
+                tempfull += temp
+                wherefinal[tempfull] = key
+                break
+            if temp in ['AND ', 'OR ', 'NOT '] and parencount == 0:
+                wherefinal[tempfull] = key
+                tempfull = ''
+                key = temp
+            else:
+                tempfull += temp
+
+        return wherefinal
 
 class Reconstruction:
 
