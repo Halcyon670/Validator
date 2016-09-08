@@ -486,22 +486,30 @@ class Reconstruction:
 
         return finaljoin
 
-    def wherereconstruct(self, wherelist):
+    def wherereconstruct(self, wherelist, whereand):
 
         # Reconstruct the where clause
         wherefinal = 'WHERE '
 
         for i in wherelist:
-            wherefinal += i
+            if whereand[i] in ['and ', 'AND ']:
+                wherefinal += ' AND ' + i
+            elif whereand[i] in ['or ', 'OR ']:
+                wherefinal += ' OR ' + i
+            elif whereand[i] in ['not ', 'NOT ']:
+                wherefinal += ' NOT ' + i
+            elif whereand[i] == 'start':
+                wherefinal += i
 
         return wherefinal
 
-    def recombine(self, joinorder, aggorder, wherelist, aggdict, joindict):
+    def recombine(self, joinorder, aggorder, wherelist, aggdict, joindict, whereand):
         finalquery = ''
         joinprog = []
         whereprog = []
         joinpos = 0
         wherepos = 0
+
 
         joinprog.append(joinorder[joinpos])
         while True:
@@ -513,21 +521,15 @@ class Reconstruction:
                     # Check if there is more than one table in the predicate. If so, check whether more than one element is already present in joinprog. If so, append.
                     if Formatting.multitablewherecheck(Formatting, joinorder, i) == True:
                         if Formatting.singlemultiwhereelementcheck(Formatting, joinprog[joinpos], i, joinprog) == True:
-                            if wherelist[wherelist.index(i) - 1] in ['AND ', 'OR ', 'NOT ']:
-                                whereprog.append(wherelist[wherelist.index(i) - 1])
-                                wherelist.remove(wherelist[wherelist.index(i) - 1])
                             whereprog.append(i)
                             wherelist.remove(i)
 
                     # Check that there is only one table, and if there is only one, check whether its table is already in joinprog. If so, append.
                     elif Formatting.singletablewherecheck(Formatting, joinprog[joinpos], i) == True and Formatting.multitablewherecheck(Formatting, joinorder, i) == False:
-                        if wherelist[wherelist.index(i) - 1] in ['AND ', 'OR ', 'NOT ']:
-                                whereprog.append(wherelist[wherelist.index(i) - 1])
-                                wherelist.remove(wherelist[wherelist.index(i) - 1])
                         whereprog.append(i)
                         wherelist.remove(i)
 
-            finalquery += Reconstruction.selectreconstruct(Reconstruction, aggorder, aggdict, joinprog, joinprog[joinpos], '') + Reconstruction.joinreconstruct(Reconstruction, joinprog, joindict) + Reconstruction.wherereconstruct(Reconstruction, whereprog)
+            finalquery += Reconstruction.selectreconstruct(Reconstruction, aggorder, aggdict, joinprog, joinprog[joinpos], '') + Reconstruction.joinreconstruct(Reconstruction, joinprog, joindict) + Reconstruction.wherereconstruct(Reconstruction, whereprog, whereand)
 
             joinpos += 1
 

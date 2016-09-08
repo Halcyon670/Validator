@@ -1,7 +1,7 @@
 import tkinter
 import xml.etree.ElementTree as ET
 from restcall import REST
-import xml.dom.minidom
+import reformat
 
 
 class ValidationMain(tkinter.Tk):
@@ -245,11 +245,28 @@ class DocList(tkinter.Frame):
         DocList.moveint = 0
 
     def validate(self):
-        """
-        This is where a lot of the text is going to be. This section needs to pull the document apart, and shift to the
-        user interface section.
-        """
-        print('Coming Soon!')
+        valdocqueries = {}
+
+        REST.getcookie(REST)
+        REST.authentify(REST)
+        REST.getUser(REST)
+
+        datasetids = {}
+
+        file = open('docxml.xml', 'r')
+        doclist = ''
+        for i in file:
+            doclist += i
+        file.close()
+
+        root = ET.fromstring(doclist)
+
+        docsraw = root.findall('./VisualDocInfo')
+        for i in docsraw:
+            datasetids[i.find('./ID').text] = i.find('./DataSetID').text
+
+        for i in DocList.valdocs:
+            print(REST.list("dataSetMeta/" + str(datasetids[i]) + '.json?visualDocId=' + str(i)))
 
 # Run the program
 app = ValidationMain()
