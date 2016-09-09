@@ -2,6 +2,7 @@ import tkinter
 import xml.etree.ElementTree as ET
 from restcall import REST
 import reformat
+import json
 
 
 class ValidationMain(tkinter.Tk):
@@ -245,6 +246,7 @@ class DocList(tkinter.Frame):
         DocList.moveint = 0
 
     def validate(self):
+
         valdocqueries = {}
 
         REST.getcookie(REST)
@@ -252,6 +254,8 @@ class DocList(tkinter.Frame):
         REST.getUser(REST)
 
         datasetids = {}
+        docjson = {}
+        docqueries = {}
 
         file = open('docxml.xml', 'r')
         doclist = ''
@@ -266,7 +270,20 @@ class DocList(tkinter.Frame):
             datasetids[i.find('./ID').text] = i.find('./DataSetID').text
 
         for i in DocList.valdocs:
-            print(REST.list("dataSetMeta/" + str(datasetids[i]) + '.json?visualDocId=' + str(i)))
+            docjson[i] = REST.list("dataSetMeta/" + str(datasetids[i]) + '.json?visualDocId=' + str(i))
+
+        for i in DocList.valdocs:
+            temp = ''
+            temp = str(docjson[i])
+            temp = temp[2:]
+            temp = temp[:-1]
+            print(temp)
+            parsed_json = json.loads(temp.replace('\\\'', '\''))
+
+            docqueries[i] = parsed_json['DataSet']['QueryPlan']
+
+        print(docqueries)
+
 
 # Run the program
 app = ValidationMain()
