@@ -18,7 +18,7 @@ class ValidationMain(tkinter.Tk):
 
         self.frames = {}
 
-        for F in (StartPage, DocList):
+        for F in (StartPage, DocList, Confirmation):
             frame = F(container, self)
             self.frames[F] = frame
             frame.grid(row=0, column=0, sticky='nsew')
@@ -67,7 +67,7 @@ class DocList(tkinter.Frame):
 
         DocList.text = tkinter.StringVar()
 
-        valbutton = tkinter.Button(self, text="Validate!", pady=10, padx=10, fg="black", command=lambda: self.validate())
+        valbutton = tkinter.Button(self, text="Validate!", pady=10, padx=10, fg="black", command=lambda: self.validate(controller))
         valbutton.grid(row=1, column=3, padx=50, sticky='n', pady=240)
 
         refbutton = tkinter.Button(self, text="Refresh!", fg="black", pady=10, padx=10, command=lambda: self.refresh())
@@ -245,7 +245,7 @@ class DocList(tkinter.Frame):
 
         DocList.moveint = 0
 
-    def validate(self):
+    def validate(self, controller):
 
         valdocqueries = {}
 
@@ -277,12 +277,43 @@ class DocList(tkinter.Frame):
             temp = str(docjson[i])
             temp = temp[2:]
             temp = temp[:-1]
-            print(temp)
+
             parsed_json = json.loads(temp.replace('\\\'', '\''))
 
             docqueries[i] = parsed_json['DataSet']['QueryPlan']
 
-        print(docqueries)
+        file = open('docqueries.txt', 'w')
+        file.write(str(docqueries))
+        file.close()
+
+        file = open('valdocs.txt', 'w')
+        file.write(str(DocList.valdocs))
+        file.close()
+
+        controller.show_frame(Confirmation)
+
+class Confirmation(tkinter.Frame):
+
+    # Initialize the starting frame
+    def __init__(self, parent, controller):
+        tkinter.Frame.__init__(self, parent)
+        controller.minsize(width=1100, height=700)
+
+        metriclabel = tkinter.Label(self, text='\nPlease choose your metrics:')
+        metriclabel.grid(column=0,row=0)
+
+        metriclistbox = tkinter.Listbox(self, height=40, width=70, selectmode='multiple')
+        metriclistbox.grid(column=0, row=1, padx=10)
+
+        restrictlabel = tkinter.Label(self, text='\nPlease choose your restrictions:')
+        restrictlabel.grid(column=1, row=0)
+
+        restrictlistbox = tkinter.Listbox(self, height=40, width=70, selectmode='multiple')
+        restrictlistbox.grid(column=1, row=1, padx=10)
+
+        continuebutton = tkinter.Button(self, text='Continue')
+        continuebutton.grid(column=2, row=1, padx=80, ipadx=10, ipady=10)
+
 
 
 # Run the program
