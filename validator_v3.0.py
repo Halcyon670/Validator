@@ -58,6 +58,7 @@ class DocList(tkinter.Frame):
 
     valdocs = []
     moveint = 0
+    docnames = {}
 
     # Generate a list of documents via a REST call.
     def __init__(self, parent, controller):
@@ -126,6 +127,8 @@ class DocList(tkinter.Frame):
             docenddate[i.find('./ID').text] = i.find('./EndDate').text
             docdescription[i.find('./ID').text] = i.find('./Description').text
             doctag[i.find('./ID').text] = i.find('./Tag').text
+
+        DocList.docnames = docnames
 
         index = 1
         for i in docids:
@@ -247,8 +250,6 @@ class DocList(tkinter.Frame):
 
     def validate(self, controller):
 
-        valdocqueries = {}
-
         REST.getcookie(REST)
         REST.authentify(REST)
         REST.getUser(REST)
@@ -282,39 +283,78 @@ class DocList(tkinter.Frame):
 
             docqueries[i] = parsed_json['DataSet']['QueryPlan']
 
-        file = open('docqueries.txt', 'w')
-        file.write(str(docqueries))
-        file.close()
+        Confirmation.valdocs = DocList.valdocs
+        Confirmation.docqueries = docqueries
+        Confirmation.docnames = DocList.docnames
 
-        file = open('valdocs.txt', 'w')
-        file.write(str(DocList.valdocs))
-        file.close()
+        Confirmation.populate(Confirmation, Confirmation.valdocs, Confirmation.docqueries)
 
         controller.show_frame(Confirmation)
 
+
 class Confirmation(tkinter.Frame):
+
+    valdocs = []
+    docqueries = {}
+    docaggs = []
+    docaggdict = {}
+    docrestrict = {}
+    docjoins = []
+    docjoindict = {}
+    docwhere = []
+    docnames = {}
 
     # Initialize the starting frame
     def __init__(self, parent, controller):
         tkinter.Frame.__init__(self, parent)
         controller.minsize(width=1100, height=700)
 
-        metriclabel = tkinter.Label(self, text='\nPlease choose your metrics:')
-        metriclabel.grid(column=0,row=0)
+        Confirmation.docname = tkinter.StringVar()
 
-        metriclistbox = tkinter.Listbox(self, height=40, width=70, selectmode='multiple')
-        metriclistbox.grid(column=0, row=1, padx=10)
+        doclabel = tkinter.Label(self, textvariable=Confirmation.docname, relief='groove', width=20, height=1)
+        doclabel.grid(column=0, row=0, sticky='nesw', pady=5, padx=5, columnspan=3)
+
+        metriclabel = tkinter.Label(self, text='\nPlease choose your metrics:')
+        metriclabel.grid(column=0,row=1)
+
+        metricscrolly = tkinter.Scrollbar(self)
+        metricscrolly.grid(column=0, row=2, sticky='ens')
+        metricscrollx = tkinter.Scrollbar(self, orient='horizontal')
+        metricscrollx.grid(column=0, row=3, sticky='new', padx=10)
+        restrictscrolly = tkinter.Scrollbar(self)
+        restrictscrolly.grid(column=1, row=2, sticky='ens')
+        restrictscrollx = tkinter.Scrollbar(self, orient='horizontal')
+        restrictscrollx.grid(column=1, row=3, sticky='new', padx=10)
+
+        Confirmation.metriclistbox = tkinter.Listbox(self, height=37, width=70, selectmode='multiple', yscrollcommand=metricscrolly.set, xscrollcommand=metricscrollx.set)
+        Confirmation.metriclistbox.grid(column=0, row=2, padx=10, sticky='n')
 
         restrictlabel = tkinter.Label(self, text='\nPlease choose your restrictions:')
-        restrictlabel.grid(column=1, row=0)
+        restrictlabel.grid(column=1, row=1)
 
-        restrictlistbox = tkinter.Listbox(self, height=40, width=70, selectmode='multiple')
-        restrictlistbox.grid(column=1, row=1, padx=10)
+        Confirmation.restrictlistbox = tkinter.Listbox(self, height=37, width=70, selectmode='multiple', yscrollcommand=restrictscrolly.set, xscrollcommand=restrictscrollx.set)
+        Confirmation.restrictlistbox.grid(column=1, row=2, padx=10, sticky='n')
 
         continuebutton = tkinter.Button(self, text='Continue')
-        continuebutton.grid(column=2, row=1, padx=80, ipadx=10, ipady=10)
+        continuebutton.grid(column=2, row=2, padx=80, ipadx=10, ipady=10)
 
+    def populate(self, valdocs, docqueries):
 
+        #Check to see if we are at the end of the list. If we are, move on to the next piece.
+        if len(valdocs) > 0 is not None:
+            Confirmation.docaggs = reformat.Isolation.aggorder(reformat, docqueries[valdocs[0]])
+            Confirmation.aggdict = reformat.Isolation.aggdict(reformat, docqueries[valdocs[0]], Confirmation.docaggs)
+            Confirmation.docjoins = reformat.Isolation.joinorder(reformat, docqueries[valdocs[0]])
+            Confirmation.docjoindict = reformat.Isolation.joindict(reformat, docqueries[valdocs[0]], Confirmation.docjoins)
+            Confirmation.docwhere = reformat.Isolation.wherelist(reformat, docqueries[valdocs[0]])
+
+            for i in Confirmation.docaggs:
+                Confirmation.metriclistbox.insert(Confirmation.docaggs.index(i), i)
+
+            for i in Confirmation.docwhere:
+                Confirmation.restrictlistbox.insert(Confirmation.docwhere.index(i), i)
+
+            Confirmation.docname.set(Confirmation.docnames[valdocs[0]])
 
 # Run the program
 app = ValidationMain()
