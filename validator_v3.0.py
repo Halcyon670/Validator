@@ -326,16 +326,16 @@ class Confirmation(tkinter.Frame):
         restrictscrollx = tkinter.Scrollbar(self, orient='horizontal')
         restrictscrollx.grid(column=1, row=3, sticky='new', padx=10)
 
-        Confirmation.metriclistbox = tkinter.Listbox(self, height=37, width=70, selectmode='multiple', yscrollcommand=metricscrolly.set, xscrollcommand=metricscrollx.set)
+        Confirmation.metriclistbox = tkinter.Listbox(self, height=37, width=70, selectmode='multiple', yscrollcommand=metricscrolly.set, xscrollcommand=metricscrollx.set, exportselection=0)
         Confirmation.metriclistbox.grid(column=0, row=2, padx=10, sticky='n')
 
         restrictlabel = tkinter.Label(self, text='\nPlease choose your restrictions:')
         restrictlabel.grid(column=1, row=1)
 
-        Confirmation.restrictlistbox = tkinter.Listbox(self, height=37, width=70, selectmode='multiple', yscrollcommand=restrictscrolly.set, xscrollcommand=restrictscrollx.set)
+        Confirmation.restrictlistbox = tkinter.Listbox(self, height=37, width=70, selectmode='multiple', yscrollcommand=restrictscrolly.set, xscrollcommand=restrictscrollx.set, exportselection=0)
         Confirmation.restrictlistbox.grid(column=1, row=2, padx=10, sticky='n')
 
-        continuebutton = tkinter.Button(self, text='Continue')
+        continuebutton = tkinter.Button(self, text='Continue', command=lambda: self.cont())
         continuebutton.grid(column=2, row=2, padx=80, ipadx=10, ipady=10)
 
     def populate(self, valdocs, docqueries):
@@ -343,10 +343,11 @@ class Confirmation(tkinter.Frame):
         #Check to see if we are at the end of the list. If we are, move on to the next piece.
         if len(valdocs) > 0 is not None:
             Confirmation.docaggs = reformat.Isolation.aggorder(reformat, docqueries[valdocs[0]])
-            Confirmation.aggdict = reformat.Isolation.aggdict(reformat, docqueries[valdocs[0]], Confirmation.docaggs)
+            Confirmation.docaggdict = reformat.Isolation.aggdict(reformat, docqueries[valdocs[0]], Confirmation.docaggs)
             Confirmation.docjoins = reformat.Isolation.joinorder(reformat, docqueries[valdocs[0]])
             Confirmation.docjoindict = reformat.Isolation.joindict(reformat, docqueries[valdocs[0]], Confirmation.docjoins)
             Confirmation.docwhere = reformat.Isolation.wherelist(reformat, docqueries[valdocs[0]])
+            Confirmation.docwhereand = reformat.Isolation.whereand(reformat, docqueries[valdocs[0]])
 
             for i in Confirmation.docaggs:
                 Confirmation.metriclistbox.insert(Confirmation.docaggs.index(i), i)
@@ -355,6 +356,18 @@ class Confirmation(tkinter.Frame):
                 Confirmation.restrictlistbox.insert(Confirmation.docwhere.index(i), i)
 
             Confirmation.docname.set(Confirmation.docnames[valdocs[0]])
+
+    def cont(self):
+        useragglist = []
+        userrestrictlist = []
+
+        for i in Confirmation.metriclistbox.curselection():
+            useragglist.append(Confirmation.metriclistbox.get(i))
+
+        for i in Confirmation.restrictlistbox.curselection():
+            userrestrictlist.append(Confirmation.restrictlistbox.get(i))
+
+        print(reformat.Reconstruction.recombine(reformat, Confirmation.docjoins, useragglist, Confirmation.docwhere, Confirmation.docaggdict, Confirmation.docjoindict, Confirmation.docwhereand, userrestrictlist))
 
 # Run the program
 app = ValidationMain()

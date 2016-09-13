@@ -503,7 +503,7 @@ class Reconstruction:
 
         return wherefinal
 
-    def recombine(self, joinorder, aggorder, wherelist, aggdict, joindict, whereand):
+    def recombine(self, joinorder, aggorder, wherelist, aggdict, joindict, whereand, restrict):
         finalquery = ''
         joinprog = []
         whereprog = []

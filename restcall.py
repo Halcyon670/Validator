@@ -43,4 +43,3 @@ class REST:
         conn.close()
         # print(data)
         return data
-
