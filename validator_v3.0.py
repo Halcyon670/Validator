@@ -3,6 +3,7 @@ import xml.etree.ElementTree as ET
 from restcall import REST
 import reformat
 import json
+import database
 
 
 class ValidationMain(tkinter.Tk):
@@ -283,7 +284,9 @@ class DocList(tkinter.Frame):
 
             docqueries[i] = parsed_json['DataSet']['QueryPlan']
 
-        Confirmation.valdocs = DocList.valdocs
+        # Confirmation.valdocs = DocList.valdocs
+        for i in DocList.valdocs:
+            Confirmation.valdocs.append(i)
         Confirmation.docqueries = docqueries
         Confirmation.docnames = DocList.docnames
 
@@ -303,6 +306,7 @@ class Confirmation(tkinter.Frame):
     docjoindict = {}
     docwhere = []
     docnames = {}
+    finalqueries = {}
 
     # Initialize the starting frame
     def __init__(self, parent, controller):
@@ -357,7 +361,19 @@ class Confirmation(tkinter.Frame):
 
             Confirmation.docname.set(Confirmation.docnames[valdocs[0]])
 
+        else:
+            docresults = {}
+            temp = ''
+
+            for i in DocList.valdocs:
+                temp = database.Query.runquery(Confirmation, Confirmation.finalqueries[i])
+                docresults[i] = temp
+                temp = ''
+
+            print(docresults)
+
     def cont(self):
+
         useragglist = []
         userrestrictlist = []
 
@@ -367,7 +383,19 @@ class Confirmation(tkinter.Frame):
         for i in Confirmation.restrictlistbox.curselection():
             userrestrictlist.append(Confirmation.restrictlistbox.get(i))
 
-        print(reformat.Reconstruction.recombine(reformat, Confirmation.docjoins, useragglist, Confirmation.docwhere, Confirmation.docaggdict, Confirmation.docjoindict, Confirmation.docwhereand, userrestrictlist))
+        Confirmation.finalqueries[Confirmation.valdocs[0]] = reformat.Reconstruction.recombine(reformat, Confirmation.docjoins, useragglist, Confirmation.docwhere, Confirmation.docaggdict, Confirmation.docjoindict, Confirmation.docwhereand, userrestrictlist)
+
+        Confirmation.docaggs = []
+        Confirmation.docaggdict = {}
+        Confirmation.docjoins = []
+        Confirmation.docjoindict = {}
+        Confirmation.docwhere = []
+        Confirmation.docwhereand = {}
+        Confirmation.valdocs.remove(Confirmation.valdocs[0])
+
+        Confirmation.populate(Confirmation, Confirmation.valdocs, Confirmation.docqueries)
+
+
 
 # Run the program
 app = ValidationMain()
