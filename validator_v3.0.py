@@ -4,6 +4,7 @@ from restcall import REST
 import reformat
 import json
 import database
+import pypyodbc
 
 
 class ValidationMain(tkinter.Tk):
@@ -344,7 +345,7 @@ class Confirmation(tkinter.Frame):
 
     def populate(self, valdocs, docqueries):
 
-        #Check to see if we are at the end of the list. If we are, move on to the next piece.
+        # Check to see if we are at the end of the list. If we are, move on to the next piece.
         if len(valdocs) > 0 is not None:
             Confirmation.docaggs = reformat.Isolation.aggorder(reformat, docqueries[valdocs[0]])
             Confirmation.docaggdict = reformat.Isolation.aggdict(reformat, docqueries[valdocs[0]], Confirmation.docaggs)
@@ -364,13 +365,16 @@ class Confirmation(tkinter.Frame):
         else:
             docresults = {}
             temp = ''
+            try:
+                for i in DocList.valdocs:
+                    print(Confirmation.finalqueries[i])
+                    temp = database.Query.runquery(Confirmation, Confirmation.finalqueries[i])
+                    docresults[i] = temp
+                    temp = ''
 
-            for i in DocList.valdocs:
-                temp = database.Query.runquery(Confirmation, Confirmation.finalqueries[i])
-                docresults[i] = temp
-                temp = ''
-
-            print(docresults)
+                print(docresults)
+            except pypyodbc.ProgrammingError:
+                print('Error!')
 
     def cont(self):
 
