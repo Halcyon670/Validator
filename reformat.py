@@ -1,4 +1,5 @@
 from log import Log
+from other import Other
 
 
 class Formatting:
@@ -405,7 +406,6 @@ class Isolation:
                 tempfull = ''
             else:
                 tempfull += temp
-
         return wherefinal
 
     def whereand(self, sql):
@@ -457,13 +457,13 @@ class Isolation:
                 key = temp
             else:
                 tempfull += temp
-
         return wherefinal
 
 class Reconstruction:
 
     def selectreconstruct(self, aggorder, aggdict, joinorder, table, restrictlevel):
 
+        table = Other.formatfunction(Other, table)
         # Begin writing the final query based on the input from the user
         queryfinal = 'SELECT'
 
@@ -500,7 +500,6 @@ class Reconstruction:
                 wherefinal += ' NOT ' + i
             elif whereand[i] == 'start':
                 wherefinal += i
-
         return wherefinal
 
     def recombine(self, joinorder, aggorder, wherelist, aggdict, joindict, whereand, restrict):

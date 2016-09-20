@@ -1,6 +1,5 @@
 Known Issues:
-    - WHERE constructor still not properly including ANDs sometimes
-    - JOIN constructor stopping in spaces in function calls
+    - Failing in situations where an alias is involved. Probably need to set up another tree to keep track of aliases assigned to each table.
 
 Assumptions:
     - There will never be more than 20 WHERE statements for any given table

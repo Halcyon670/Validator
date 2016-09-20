@@ -6,6 +6,7 @@ import json
 import database
 import pypyodbc
 import variables
+import other
 
 class ValidationMain(tkinter.Tk):
 
@@ -216,6 +217,7 @@ class DocList(tkinter.Frame):
             parsed_json = json.loads(temp.replace('\\\'', '\''))
 
             variables.docqueries[i] = parsed_json['DataSet']['QueryPlan']
+            variables.docqueries[i] = other.Other.removedash(other, variables.docqueries[i])
 
         # Confirmation.valdocs = DocList.valdocs
         for i in variables.valdocs:
@@ -298,6 +300,7 @@ class Confirmation(tkinter.Frame):
             temp = ''
             try:
                 for i in variables.valdocs:
+                    print(variables.docqueries[i])
                     print(variables.finalqueries[i])
                     temp = database.Query.runquery(Confirmation, variables.finalqueries[i])
                     docresults[i] = temp
