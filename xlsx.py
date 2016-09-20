@@ -18,6 +18,7 @@ class xlsxsheet:
         resultsexplanationformat = workbook.add_format({'fg_color': '#B4C6E7', 'bold': True, 'border': 2})
         concatdatagridformat = workbook.add_format({'fg_color': '#C6E0B4', 'bold': True, 'border': 2})
         subtractdatagridformat = workbook.add_format({'fg_color': '#C6E0B4', 'border': 2})
+        textboxoption = {'width': 1000, 'height': 10000}
 
         worksheet.set_column(0, 10, 20)
 
@@ -79,5 +80,6 @@ class xlsxsheet:
 
         n += 2
 
-        worksheet.insert_textbox(n, 0, sql)
+        worksheet.insert_textbox(n, 0, sql, textboxoption)
+
         workbook.close()

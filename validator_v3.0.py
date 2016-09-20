@@ -5,7 +5,7 @@ import reformat
 import json
 import database
 import pypyodbc
-
+import variables
 
 class ValidationMain(tkinter.Tk):
 
@@ -58,9 +58,7 @@ class StartPage(tkinter.Frame):
 
 class DocList(tkinter.Frame):
 
-    valdocs = []
     moveint = 0
-    docnames = {}
 
     # Generate a list of documents via a REST call.
     def __init__(self, parent, controller):
@@ -110,65 +108,31 @@ class DocList(tkinter.Frame):
             doclist += i
         file.close()
 
-        docids = []
-        docnames = {}
-        doclastmodified = {}
-        docstartdate = {}
-        docenddate = {}
-        docdescription = {}
-        doctag = {}
-
         root = ET.fromstring(doclist)
 
         docsraw = root.findall('./VisualDocInfo')
         for i in docsraw:
-            docids.append(i.find('./ID').text)
-            docnames[i.find('./ID').text] = i.find('./Name').text
-            doclastmodified[i.find('./ID').text] = i.find('./LastModified').text
-            docstartdate[i.find('./ID').text] = i.find('./StartDate').text
-            docenddate[i.find('./ID').text] = i.find('./EndDate').text
-            docdescription[i.find('./ID').text] = i.find('./Description').text
-            doctag[i.find('./ID').text] = i.find('./Tag').text
+            variables.docids.append(i.find('./ID').text)
+            variables.docnames[i.find('./ID').text] = i.find('./Name').text
+            variables.doclastmodified[i.find('./ID').text] = i.find('./LastModified').text
+            variables.docstartdate[i.find('./ID').text] = i.find('./StartDate').text
+            variables.docenddate[i.find('./ID').text] = i.find('./EndDate').text
+            variables.docdescription[i.find('./ID').text] = i.find('./Description').text
+            variables.doctag[i.find('./ID').text] = i.find('./Tag').text
 
-        DocList.docnames = docnames
+        DocList.docnames = variables.docnames
 
         index = 1
-        for i in docids:
-            DocList.listbox.insert(index, docnames[i])
+        for i in variables.docids:
+            DocList.listbox.insert(index, variables.docnames[i])
             index += 1
 
     # Displays doc information on the doclabel. This only does this one at a time, and is set to a trigger for clicking on a doc.
     def updatedoclabel(self, event):
 
-        file = open('docxml.xml', 'r')
-        doclist = ''
-        for i in file:
-            doclist += i
-        file.close()
-
-        docids = []
-        docnames = {}
-        doclastmodified = {}
-        docstartdate = {}
-        docenddate = {}
-        docdescription = {}
-        doctag = {}
-
-        root = ET.fromstring(doclist)
-
-        docsraw = root.findall('./VisualDocInfo')
-        for i in docsraw:
-            docids.append(i.find('./ID').text)
-            docnames[i.find('./ID').text] = i.find('./Name').text
-            doclastmodified[i.find('./ID').text] = i.find('./LastModified').text
-            docstartdate[i.find('./ID').text] = i.find('./StartDate').text
-            docenddate[i.find('./ID').text] = i.find('./EndDate').text
-            docdescription[i.find('./ID').text] = i.find('./Description').text
-            doctag[i.find('./ID').text] = i.find('./Tag').text
-
         temp = ''
         for i in DocList.listbox.curselection():
-            temp += 'Doc: ' + str(docnames[docids[i]]) + '\nDescription: ' + str(docdescription[docids[i]]) + '\nTag: ' + str(doctag[docids[i]]) + '\nStartDate: ' + str(docstartdate[docids[i]]) + '\nEndDate: ' + str(docenddate[docids[i]]) + '\nLast Modified: ' + str(doclastmodified[docids[i]]) + '\n\n'
+            temp += 'Doc: ' + str(variables.docnames[variables.docids[i]]) + '\nDescription: ' + str(variables.docdescription[variables.docids[i]]) + '\nTag: ' + str(variables.doctag[variables.docids[i]]) + '\nStartDate: ' + str(variables.docstartdate[variables.docids[i]]) + '\nEndDate: ' + str(variables.docenddate[variables.docids[i]]) + '\nLast Modified: ' + str(variables.doclastmodified[variables.docids[i]]) + '\n\n'
 
         DocList.text.set(temp)
 
@@ -177,24 +141,10 @@ class DocList(tkinter.Frame):
         if DocList.listbox.curselection() is not None:
             movevar = 0
 
-            file = open('docxml.xml', 'r')
-            doclist = ''
-            for i in file:
-                doclist += i
-            file.close()
-
-            docids = []
-
-            root = ET.fromstring(doclist)
-
-            docsraw = root.findall('./VisualDocInfo')
-            for i in docsraw:
-                docids.append(i.find('./ID').text)
-
             for i in DocList.listbox.curselection():
                 movevar = int(i)
 
-            DocList.valdocs.append(docids[movevar])
+            variables.valdocs.append(variables.docids[movevar])
             DocList.addeddoclistbox.insert(DocList.moveint, DocList.listbox.get(movevar))
             DocList.listbox.itemconfig(movevar, {'bg': 'grey'})
             DocList.moveint += 1
@@ -204,26 +154,12 @@ class DocList(tkinter.Frame):
         if DocList.addeddoclistbox.curselection() is not None:
             movevar = 0
 
-            file = open('docxml.xml', 'r')
-            doclist = ''
-            for i in file:
-                doclist += i
-            file.close()
-
-            docids = []
-
-            root = ET.fromstring(doclist)
-
-            docsraw = root.findall('./VisualDocInfo')
-            for i in docsraw:
-                docids.append(i.find('./ID').text)
-
             for i in DocList.addeddoclistbox.curselection():
                 movevar = int(i)
 
             DocList.addeddoclistbox.delete(movevar)
-            DocList.listbox.itemconfig(docids.index(DocList.valdocs[movevar]), {'bg': 'white'})
-            DocList.valdocs.remove(DocList.valdocs[movevar])
+            DocList.listbox.itemconfig(variables.docids.index(variables.valdocs[movevar]), {'bg': 'white'})
+            variables.valdocs.remove(variables.valdocs[movevar])
 
     # Refreshes docxml, then repopulates.
     def refresh(self):
@@ -256,10 +192,6 @@ class DocList(tkinter.Frame):
         REST.authentify(REST)
         REST.getUser(REST)
 
-        datasetids = {}
-        docjson = {}
-        docqueries = {}
-
         file = open('docxml.xml', 'r')
         doclist = ''
         for i in file:
@@ -270,26 +202,26 @@ class DocList(tkinter.Frame):
 
         docsraw = root.findall('./VisualDocInfo')
         for i in docsraw:
-            datasetids[i.find('./ID').text] = i.find('./DataSetID').text
+            variables.datasetids[i.find('./ID').text] = i.find('./DataSetID').text
 
-        for i in DocList.valdocs:
-            docjson[i] = REST.list("dataSetMeta/" + str(datasetids[i]) + '.json?visualDocId=' + str(i))
+        for i in variables.valdocs:
+            variables.docjson[i] = REST.list("dataSetMeta/" + str(variables.datasetids[i]) + '.json?visualDocId=' + str(i))
 
-        for i in DocList.valdocs:
+        for i in variables.valdocs:
             temp = ''
-            temp = str(docjson[i])
+            temp = str(variables.docjson[i])
             temp = temp[2:]
             temp = temp[:-1]
 
             parsed_json = json.loads(temp.replace('\\\'', '\''))
 
-            docqueries[i] = parsed_json['DataSet']['QueryPlan']
+            variables.docqueries[i] = parsed_json['DataSet']['QueryPlan']
 
         # Confirmation.valdocs = DocList.valdocs
-        for i in DocList.valdocs:
+        for i in variables.valdocs:
             Confirmation.valdocs.append(i)
-        Confirmation.docqueries = docqueries
-        Confirmation.docnames = DocList.docnames
+        Confirmation.docqueries = variables.docqueries
+        Confirmation.docnames = variables.docnames
 
         Confirmation.populate(Confirmation, Confirmation.valdocs, Confirmation.docqueries)
 
@@ -307,7 +239,6 @@ class Confirmation(tkinter.Frame):
     docjoindict = {}
     docwhere = []
     docnames = {}
-    finalqueries = {}
 
     # Initialize the starting frame
     def __init__(self, parent, controller):
@@ -366,9 +297,9 @@ class Confirmation(tkinter.Frame):
             docresults = {}
             temp = ''
             try:
-                for i in DocList.valdocs:
-                    print(Confirmation.finalqueries[i])
-                    temp = database.Query.runquery(Confirmation, Confirmation.finalqueries[i])
+                for i in variables.valdocs:
+                    print(variables.finalqueries[i])
+                    temp = database.Query.runquery(Confirmation, variables.finalqueries[i])
                     docresults[i] = temp
                     temp = ''
 
@@ -387,7 +318,7 @@ class Confirmation(tkinter.Frame):
         for i in Confirmation.restrictlistbox.curselection():
             userrestrictlist.append(Confirmation.restrictlistbox.get(i))
 
-        Confirmation.finalqueries[Confirmation.valdocs[0]] = reformat.Reconstruction.recombine(reformat, Confirmation.docjoins, useragglist, Confirmation.docwhere, Confirmation.docaggdict, Confirmation.docjoindict, Confirmation.docwhereand, userrestrictlist)
+        variables.finalqueries[Confirmation.valdocs[0]] = reformat.Reconstruction.recombine(reformat, Confirmation.docjoins, useragglist, Confirmation.docwhere, Confirmation.docaggdict, Confirmation.docjoindict, Confirmation.docwhereand, userrestrictlist)
 
         Confirmation.docaggs = []
         Confirmation.docaggdict = {}
