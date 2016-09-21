@@ -6,7 +6,9 @@ import json
 import database
 import pypyodbc
 import variables
-import other
+from other import Other
+from xlsx import xlsxsheet
+import xlsxwriter
 
 class ValidationMain(tkinter.Tk):
 
@@ -213,13 +215,16 @@ class DocList(tkinter.Frame):
             temp = str(variables.docjson[i])
             temp = temp[2:]
             temp = temp[:-1]
+            tempquery = ''
 
             parsed_json = json.loads(temp.replace('\\\'', '\''))
 
-            variables.docqueries[i] = parsed_json['DataSet']['QueryPlan']
-            variables.docqueries[i] = other.Other.removedash(other, variables.docqueries[i])
+            tempquery = Other.removedash(Other, parsed_json['DataSet']['QueryPlan'])
+            tempquery = Other.removedash(Other, tempquery)
 
-        # Confirmation.valdocs = DocList.valdocs
+            variables.docqueries[i] = tempquery
+
+        # Confirmation.valdocs = variables.valdocs
         for i in variables.valdocs:
             Confirmation.valdocs.append(i)
         Confirmation.docqueries = variables.docqueries
@@ -298,17 +303,22 @@ class Confirmation(tkinter.Frame):
         else:
             docresults = {}
             temp = ''
-            try:
-                for i in variables.valdocs:
+            for i in variables.valdocs:
+                try:
                     print(variables.docqueries[i])
                     print(variables.finalqueries[i])
                     temp = database.Query.runquery(Confirmation, variables.finalqueries[i])
                     docresults[i] = temp
                     temp = ''
+                except pypyodbc.ProgrammingError:
+                    variables.valdocs.remove(i)
+                    print('Error!')
 
-                print(docresults)
-            except pypyodbc.ProgrammingError:
-                print('Error!')
+            workbook = xlsxwriter.Workbook('DV_20160921.xlsx')
+
+            for i in variables.valdocs:
+                xlsxsheet.addsheet(xlsxsheet, workbook, variables.docnames[i], 'http://app5.internal.bis2.net/index.html?id=' + str(i), str(variables.docstartdate[i]) + ' - ' + str(variables.docenddate[i]), variables.doclastmodified[i], variables.docaggs[i], docresults[i], [], variables.finalqueries[i])
+
 
     def cont(self):
 
@@ -322,6 +332,7 @@ class Confirmation(tkinter.Frame):
             userrestrictlist.append(Confirmation.restrictlistbox.get(i))
 
         variables.finalqueries[Confirmation.valdocs[0]] = reformat.Reconstruction.recombine(reformat, Confirmation.docjoins, useragglist, Confirmation.docwhere, Confirmation.docaggdict, Confirmation.docjoindict, Confirmation.docwhereand, userrestrictlist)
+        variables.docaggs[Confirmation.valdocs[0]] = useragglist
 
         Confirmation.docaggs = []
         Confirmation.docaggdict = {}
@@ -332,7 +343,6 @@ class Confirmation(tkinter.Frame):
         Confirmation.valdocs.remove(Confirmation.valdocs[0])
 
         Confirmation.populate(Confirmation, Confirmation.valdocs, Confirmation.docqueries)
-
 
 
 # Run the program

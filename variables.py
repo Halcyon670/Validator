@@ -8,6 +8,7 @@ docstartdate = {}
 docenddate = {}
 docdescription = {}
 doctag = {}
+docaggs = {}
 
 # Variables over local list of docs:
 

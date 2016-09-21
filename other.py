@@ -6,8 +6,8 @@ class Other:
         return alphabet[i]
 
     def removedash(self, query):
-        query.replace('\n', ' ')
-        query.replace('\t', ' ')
+        query = query.replace('\\n', ' ')
+        query = query.replace('\\t', ' ')
         return query
 
     def formatfunction(self, table):
