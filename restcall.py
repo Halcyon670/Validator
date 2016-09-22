@@ -1,12 +1,23 @@
 import http.cookiejar
 import http.client
 from urllib import parse
-import xml.dom.minidom
-
+import xml.etree.ElementTree as ET
 
 class REST:
+
+    file = open('config.xml', 'r')
+    config = ''
+    for i in file:
+        config += i
+    file.close()
+
+    root = ET.fromstring(config)
+
+    host = root.find('./URLSettings/URL').text
+    user = root.find('./URLSettings/URLuser').text
+    password = root.find('./URLSettings/URLpass').text
+
     cookie = ""
-    host = "app5.internal.bis2.net"
     headers = {"Content-type": "application/x-www-form-urlencoded", "Accept": "*/*"}
 
     def getcookie(self):
@@ -20,7 +31,7 @@ class REST:
         conn.close()
 
     def authentify(self):
-        params = parse.urlencode({'j_username': 'irina', 'j_password': 'developer'})
+        params = parse.urlencode({'j_username': REST.user, 'j_password': REST.password})
         conn = http.client.HTTPConnection(REST.host)
         conn.request("POST", "/rest/j_security_check", params, REST.headers)
         response = conn.getresponse()

@@ -23,7 +23,7 @@ class ValidationMain(tkinter.Tk):
 
         self.frames = {}
 
-        for F in (StartPage, DocList, Confirmation):
+        for F in (StartPage, DocList, Confirmation, Settings):
             frame = F(container, self)
             self.frames[F] = frame
             frame.grid(row=0, column=0, sticky='nsew')
@@ -55,7 +55,7 @@ class StartPage(tkinter.Frame):
         quitapp = tkinter.Button(self, text="Quit", fg="black", pady=10, padx=10, command=lambda: exit())
         quitapp.grid(column=1, row=3, pady=10, padx=10)
 
-        settings = tkinter.Button(self, text="Settings", fg="black", pady=10, padx=10)
+        settings = tkinter.Button(self, text="Settings", fg="black", pady=10, padx=10, command=lambda: controller.show_frame(Settings))
         settings.grid(column=1, row=2, pady=10, sticky='e', padx=473)
 
 
@@ -283,6 +283,10 @@ class Confirmation(tkinter.Frame):
 
     def populate(self, valdocs, docqueries):
 
+        # Clear the listboxes before moving on
+        Confirmation.metriclistbox.delete(0, 100000)
+        Confirmation.restrictlistbox.delete(0, 10000)
+
         # Check to see if we are at the end of the list. If we are, move on to the next piece.
         if len(valdocs) > 0 is not None:
             Confirmation.docaggs = reformat.Isolation.aggorder(reformat, docqueries[valdocs[0]])
@@ -344,6 +348,88 @@ class Confirmation(tkinter.Frame):
 
         Confirmation.populate(Confirmation, Confirmation.valdocs, Confirmation.docqueries)
 
+
+class Settings(tkinter.Frame):
+
+    # Initialize the starting frame
+    def __init__(self, parent, controller):
+        tkinter.Frame.__init__(self, parent)
+        controller.minsize(width=1100, height=700)
+
+        settingslabel = tkinter.Label(self, text='Settings:\n\n')
+        settingslabel.grid(row=0, column=1)
+
+        # URL Settings
+        urlsettingslabel = tkinter.Label(self, text='URL Info:\n')
+        urlsettingslabel.grid(row=1, column=0)
+
+        urllabel = tkinter.Label(self, text='URL:')
+        urllabel.grid(row=2, column=0, sticky='w')
+
+        urltext = tkinter.Text(self, height=1, width=35)
+        urltext.grid(row=3, column=0)
+
+        urluserlabel = tkinter.Label(self, text='Username:')
+        urluserlabel.grid(row=4, column=0, sticky='w')
+
+        urlusertext = tkinter.Text(self, height=1, width=35)
+        urlusertext.grid(row=5, column=0)
+
+        urlpasslabel = tkinter.Label(self, text='Password:')
+        urlpasslabel.grid(row=6, column=0, sticky='w')
+
+        urlpasstext = tkinter.Text(self, height=1, width=35)
+        urlpasstext.grid(row=7, column=0)
+
+        # Database Settings
+        databasesettingslabel = tkinter.Label(self, text='Database Info:\n')
+        databasesettingslabel.grid(row=1, column=1)
+
+        databasedriverlabel = tkinter.Label(self, text='Driver:')
+        databasedriverlabel.grid(row=2, column=1, sticky='w')
+
+        databasedrivertext = tkinter.Text(self, height=1, width=35)
+        databasedrivertext.grid(row=3, column=1)
+
+        databaseserverlabel = tkinter.Label(self, text='Server:')
+        databaseserverlabel.grid(row=4, column=1, sticky='w')
+
+        databaseservertext = tkinter.Text(self, height=1, width=35)
+        databaseservertext.grid(row=5, column=1)
+
+        databasedblabel = tkinter.Label(self, text='Database:')
+        databasedblabel.grid(row=6, column=1, sticky='w')
+
+        databasedbtext = tkinter.Text(self, height=1, width=35)
+        databasedbtext.grid(row=7, column=1)
+
+        databaseuserlabel = tkinter.Label(self, text='User:')
+        databaseuserlabel.grid(row=8, column=1, sticky='w')
+
+        databaseusertext = tkinter.Text(self, height=1, width=35)
+        databaseusertext.grid(row=9, column=1)
+
+        databasepasslabel = tkinter.Label(self, text='Password:')
+        databasepasslabel.grid(row=10, column=1, sticky='w')
+
+        databasepasstext = tkinter.Text(self, height=1, width=35)
+        databasepasstext.grid(row=11, column=1)
+
+        # Advanced Settings
+        advancedsettingslabel = tkinter.Label(self, text='Advanced Settings:\n')
+        advancedsettingslabel.grid(row=1, column=2)
+
+        startingjoinlabel = tkinter.Label(self, text='Starting Joins:')
+        startingjoinlabel.grid(row=2, column=2, sticky='w')
+
+        startingjointext = tkinter.Text(self, height=1, width=35)
+        startingjointext.grid(row=3, column=2)
+
+        endingjoinlabel = tkinter.Label(self, text='Ending Joins:')
+        endingjoinlabel.grid(row=4, column=2, sticky='w')
+
+        endingjointext = tkinter.Text(self, height=1, width=35)
+        endingjointext.grid(row=5, column=2)
 
 # Run the program
 app = ValidationMain()

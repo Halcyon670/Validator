@@ -1,11 +1,16 @@
 import xlsxwriter
 import other
 
+
 class xlsxsheet:
+
+    xlsxcount = 0
 
     def addsheet(self, workbook, name, url, daterange, lastmodified, metricnames, steps, datagrid, sql):
 
-        worksheet = workbook.add_worksheet('1')
+        xlsxsheet.xlsxcount += 1
+
+        worksheet = workbook.add_worksheet(str(xlsxsheet.xlsxcount) + '-' + name[:29])
 
         nameformat = workbook.add_format({'bold': True, 'underline': True, 'font_color': 'blue', 'font_size': 11})
         lastmodifiedformat = workbook.add_format({'font_color': 'purple'})
