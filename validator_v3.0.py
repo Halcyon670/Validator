@@ -55,8 +55,52 @@ class StartPage(tkinter.Frame):
         quitapp = tkinter.Button(self, text="Quit", fg="black", pady=10, padx=10, command=lambda: exit())
         quitapp.grid(column=1, row=3, pady=10, padx=10)
 
-        settings = tkinter.Button(self, text="Settings", fg="black", pady=10, padx=10, command=lambda: controller.show_frame(Settings))
+        settings = tkinter.Button(self, text="Settings", fg="black", pady=10, padx=10, command=lambda: self.showsettings(controller))
         settings.grid(column=1, row=2, pady=10, sticky='e', padx=473)
+
+    def showsettings(self, controller):
+
+        Settings.urltext.delete(1.0, tkinter.END)
+        Settings.urlusertext.delete(1.0, tkinter.END)
+        Settings.urlpasstext.delete(1.0, tkinter.END)
+        Settings.databasedrivertext.delete(1.0, tkinter.END)
+        Settings.databaseservertext.delete(1.0, tkinter.END)
+        Settings.databasedbtext.delete(1.0, tkinter.END)
+        Settings.databaseusertext.delete(1.0, tkinter.END)
+        Settings.databasepasstext.delete(1.0, tkinter.END)
+        Settings.startingjointext.delete(1.0, tkinter.END)
+        Settings.endingjointext.delete(1.0, tkinter.END)
+        config = ''
+        file = open('config.xml', 'r')
+        for i in file:
+            config += i
+        file.close()
+
+        root = ET.fromstring(config)
+
+        url = root.find('./URLSettings/URL').text
+        urluser = root.find('./URLSettings/URLuser').text
+        urlpass = root.find('./URLSettings/URLpass').text
+        dbdriver = root.find('./DatabaseSettings/Driver').text
+        dbserver = root.find('./DatabaseSettings/Server').text
+        dbdatabase = root.find('./DatabaseSettings/Database').text
+        dbuser = root.find('./DatabaseSettings/User').text
+        dbpassword = root.find('./DatabaseSettings/Password').text
+        startingjoins = root.find('./AdvancedSettings/StartingJoins').text
+        endingjoins = root.find('./AdvancedSettings/EndingJoins').text
+
+        Settings.urltext.insert(tkinter.END, url)
+        Settings.urlusertext.insert(tkinter.END, urluser)
+        Settings.urlpasstext.insert(tkinter.END, urlpass)
+        Settings.databasedrivertext.insert(tkinter.END, dbdriver)
+        Settings.databaseservertext.insert(tkinter.END, dbserver)
+        Settings.databasedbtext.insert(tkinter.END, dbdatabase)
+        Settings.databaseusertext.insert(tkinter.END, dbuser)
+        Settings.databasepasstext.insert(tkinter.END, dbpassword)
+        Settings.startingjointext.insert(tkinter.END, startingjoins)
+        Settings.endingjointext.insert(tkinter.END, endingjoins)
+
+        controller.show_frame(Settings)
 
 
 class DocList(tkinter.Frame):
@@ -356,7 +400,7 @@ class Settings(tkinter.Frame):
         tkinter.Frame.__init__(self, parent)
         controller.minsize(width=1100, height=700)
 
-        settingslabel = tkinter.Label(self, text='Settings:\n\n')
+        settingslabel = tkinter.Label(self, text='Settings:\n\n', font='bold')
         settingslabel.grid(row=0, column=1)
 
         # URL Settings
@@ -364,72 +408,119 @@ class Settings(tkinter.Frame):
         urlsettingslabel.grid(row=1, column=0)
 
         urllabel = tkinter.Label(self, text='URL:')
-        urllabel.grid(row=2, column=0, sticky='w')
+        urllabel.grid(row=2, column=0, sticky='w', padx=30)
 
-        urltext = tkinter.Text(self, height=1, width=35)
-        urltext.grid(row=3, column=0)
+        Settings.urltext = tkinter.Text(self, height=1, width=35)
+        Settings.urltext.grid(row=3, column=0, padx=30)
 
-        urluserlabel = tkinter.Label(self, text='Username:')
-        urluserlabel.grid(row=4, column=0, sticky='w')
+        urluserlabel = tkinter.Label(self, text='\nUsername:')
+        urluserlabel.grid(row=4, column=0, sticky='w', padx=30)
 
-        urlusertext = tkinter.Text(self, height=1, width=35)
-        urlusertext.grid(row=5, column=0)
+        Settings.urlusertext = tkinter.Text(self, height=1, width=35)
+        Settings.urlusertext.grid(row=5, column=0, padx=30)
 
-        urlpasslabel = tkinter.Label(self, text='Password:')
-        urlpasslabel.grid(row=6, column=0, sticky='w')
+        urlpasslabel = tkinter.Label(self, text='\nPassword:')
+        urlpasslabel.grid(row=6, column=0, sticky='w', padx=30)
 
-        urlpasstext = tkinter.Text(self, height=1, width=35)
-        urlpasstext.grid(row=7, column=0)
+        Settings.urlpasstext = tkinter.Text(self, height=1, width=35)
+        Settings.urlpasstext.grid(row=7, column=0, padx=30)
 
         # Database Settings
         databasesettingslabel = tkinter.Label(self, text='Database Info:\n')
-        databasesettingslabel.grid(row=1, column=1)
+        databasesettingslabel.grid(row=1, column=1, padx=70)
 
         databasedriverlabel = tkinter.Label(self, text='Driver:')
-        databasedriverlabel.grid(row=2, column=1, sticky='w')
+        databasedriverlabel.grid(row=2, column=1, sticky='w', padx=70)
 
-        databasedrivertext = tkinter.Text(self, height=1, width=35)
-        databasedrivertext.grid(row=3, column=1)
+        Settings.databasedrivertext = tkinter.Text(self, height=1, width=35)
+        Settings.databasedrivertext.grid(row=3, column=1, padx=70)
 
-        databaseserverlabel = tkinter.Label(self, text='Server:')
-        databaseserverlabel.grid(row=4, column=1, sticky='w')
+        databaseserverlabel = tkinter.Label(self, text='\nServer:')
+        databaseserverlabel.grid(row=4, column=1, sticky='w', padx=70)
 
-        databaseservertext = tkinter.Text(self, height=1, width=35)
-        databaseservertext.grid(row=5, column=1)
+        Settings.databaseservertext = tkinter.Text(self, height=1, width=35)
+        Settings.databaseservertext.grid(row=5, column=1, padx=70)
 
-        databasedblabel = tkinter.Label(self, text='Database:')
-        databasedblabel.grid(row=6, column=1, sticky='w')
+        databasedblabel = tkinter.Label(self, text='\nDatabase:')
+        databasedblabel.grid(row=6, column=1, sticky='w', padx=70)
 
-        databasedbtext = tkinter.Text(self, height=1, width=35)
-        databasedbtext.grid(row=7, column=1)
+        Settings.databasedbtext = tkinter.Text(self, height=1, width=35)
+        Settings.databasedbtext.grid(row=7, column=1, padx=70)
 
-        databaseuserlabel = tkinter.Label(self, text='User:')
-        databaseuserlabel.grid(row=8, column=1, sticky='w')
+        databaseuserlabel = tkinter.Label(self, text='\nUserName:')
+        databaseuserlabel.grid(row=8, column=1, sticky='w', padx=70)
 
-        databaseusertext = tkinter.Text(self, height=1, width=35)
-        databaseusertext.grid(row=9, column=1)
+        Settings.databaseusertext = tkinter.Text(self, height=1, width=35)
+        Settings.databaseusertext.grid(row=9, column=1, padx=70)
 
-        databasepasslabel = tkinter.Label(self, text='Password:')
-        databasepasslabel.grid(row=10, column=1, sticky='w')
+        databasepasslabel = tkinter.Label(self, text='\nPassword:')
+        databasepasslabel.grid(row=10, column=1, sticky='w', padx=70)
 
-        databasepasstext = tkinter.Text(self, height=1, width=35)
-        databasepasstext.grid(row=11, column=1)
+        Settings.databasepasstext = tkinter.Text(self, height=1, width=35)
+        Settings.databasepasstext.grid(row=11, column=1, padx=70)
 
         # Advanced Settings
         advancedsettingslabel = tkinter.Label(self, text='Advanced Settings:\n')
-        advancedsettingslabel.grid(row=1, column=2)
+        advancedsettingslabel.grid(row=1, column=2, padx=20)
 
         startingjoinlabel = tkinter.Label(self, text='Starting Joins:')
-        startingjoinlabel.grid(row=2, column=2, sticky='w')
+        startingjoinlabel.grid(row=2, column=2, sticky='w', padx=20)
 
-        startingjointext = tkinter.Text(self, height=1, width=35)
-        startingjointext.grid(row=3, column=2)
+        Settings.startingjointext = tkinter.Text(self, height=1, width=35)
+        Settings.startingjointext.grid(row=3, column=2, padx=20)
 
         endingjoinlabel = tkinter.Label(self, text='Ending Joins:')
-        endingjoinlabel.grid(row=4, column=2, sticky='w')
+        endingjoinlabel.grid(row=4, column=2, sticky='w', padx=20)
 
-        endingjointext = tkinter.Text(self, height=1, width=35)
-        endingjointext.grid(row=5, column=2)
+        Settings.endingjointext = tkinter.Text(self, height=1, width=35)
+        Settings.endingjointext.grid(row=5, column=2, padx=2)
+
+        # Other Stuff
+        applybutton = tkinter.Button(self, text='Apply', command=lambda: self.applysettings(controller))
+        applybutton.grid(row=12, column=2, sticky='s', pady=10)
+
+        cancelbutton = tkinter.Button(self, text='Cancel', command=lambda: controller.show_frame(StartPage))
+        cancelbutton.grid(row=13, column=2, sticky='s', pady=10)
+
+    def applysettings(self, controller):
+
+        url = Settings.urltext.get(1.0, tkinter.END)
+        urluser = Settings.urlusertext.get(1.0, tkinter.END)
+        urlpass = Settings.urlpasstext.get(1.0, tkinter.END)
+        dbdriver = Settings.databasedrivertext.get(1.0, tkinter.END)
+        dbserver = Settings.databaseservertext.get(1.0, tkinter.END)
+        dbdatabase = Settings.databasedbtext.get(1.0, tkinter.END)
+        dbuser = Settings.databaseusertext.get(1.0, tkinter.END)
+        dbpass = Settings.databasepasstext.get(1.0, tkinter.END)
+        startjoins = Settings.startingjointext.get(1.0, tkinter.END)
+        endjoins = Settings.endingjointext.get(1.0, tkinter.END)
+
+        # Need to include this. Otherwise it completely ruins the formatting of the document.
+        url = url.replace('\n', '')
+        urluser = urluser.replace('\n', '')
+        urlpass = urlpass.replace('\n', '')
+        dbdriver = dbdriver.replace('\n', '')
+        dbserver = dbserver.replace('\n', '')
+        dbdatabase = dbdatabase.replace('\n', '')
+        dbuser = dbuser.replace('\n', '')
+        dbpass = dbpass.replace('\n', '')
+        startjoins = startjoins.replace('\n', '')
+        endjoins = endjoins.replace('\n', '')
+
+        root = ET.parse('config.xml')
+        root.find('./URLSettings/URL').text = url
+        root.find('./URLSettings/URLuser').text = urluser
+        root.find('./URLSettings/URLpass').text = urlpass
+        root.find('./DatabaseSettings/Driver').text = dbdriver
+        root.find('./DatabaseSettings/Server').text = dbserver
+        root.find('./DatabaseSettings/Database').text = dbdatabase
+        root.find('./DatabaseSettings/User').text = dbuser
+        root.find('./DatabaseSettings/Password').text = dbpass
+        root.find('./AdvancedSettings/StartingJoins').text = startjoins
+        root.find('./AdvancedSettings/EndingJoins').text = endjoins
+        root.write('config.xml')
+
+        controller.show_frame(StartPage)
 
 # Run the program
 app = ValidationMain()

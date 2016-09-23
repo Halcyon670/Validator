@@ -13,6 +13,6 @@
 	</DatabaseSettings>
 	<AdvancedSettings>
 		<StartingJoins>BIS2_GEO_Chairs,cqa</StartingJoins>
-		<EndingJoins>BIS2_VW_Site</EndingJoins>
+		<EndingJoins>BIS2_Site</EndingJoins>
 	</AdvancedSettings>
 </validatorconfig>
