@@ -13,7 +13,7 @@ class xlsxsheet:
         worksheet = workbook.add_worksheet(str(xlsxsheet.xlsxcount) + '-' + name[:29])
 
         nameformat = workbook.add_format({'bold': True, 'underline': True, 'font_color': 'blue', 'font_size': 11})
-        lastmodifiedformat = workbook.add_format({'font_color': 'purple'})
+        lastmodifiedformat = workbook.add_format({'font_color': 'purple', 'num_format': 'yyyy-mm-dd hh:mm:ss'})
         metricnameformat = workbook.add_format({'fg_color': '#ddebf7', 'underline': True, 'bold': True, 'border': 1})
         stepformat = workbook.add_format({'fg_color': '#ededed', 'border': 1})
         datagridformat = workbook.add_format({'fg_color': '#e2efda', 'border': 1, 'bold': True})
@@ -26,7 +26,6 @@ class xlsxsheet:
         textboxoption = {'width': 1000, 'height': 10000}
 
         worksheet.set_column(0, 10, 20)
-
         worksheet.write(0, 0, name, nameformat)
         worksheet.write(0, 3, url)
         worksheet.write(1, 0, daterange)

@@ -9,6 +9,8 @@ import variables
 from other import Other
 from xlsx import xlsxsheet
 import xlsxwriter
+from datetime import date
+from datetime import datetime
 
 class ValidationMain(tkinter.Tk):
 
@@ -159,13 +161,23 @@ class DocList(tkinter.Frame):
 
         docsraw = root.findall('./VisualDocInfo')
         for i in docsraw:
+            temptag = ''
+            tempdesc = ''
             variables.docids.append(i.find('./ID').text)
             variables.docnames[i.find('./ID').text] = i.find('./Name').text
-            variables.doclastmodified[i.find('./ID').text] = i.find('./LastModified').text
-            variables.docstartdate[i.find('./ID').text] = i.find('./StartDate').text
-            variables.docenddate[i.find('./ID').text] = i.find('./EndDate').text
-            variables.docdescription[i.find('./ID').text] = i.find('./Description').text
-            variables.doctag[i.find('./ID').text] = i.find('./Tag').text
+            variables.doclastmodified[i.find('./ID').text] = datetime.strptime(i.find('./LastModified').text[:-3], '%Y%m%d%H%M%S')
+            variables.docstartdate[i.find('./ID').text] = datetime.strptime(i.find('./StartDate').text[:-3], '%Y%m%d%H%M%S')
+            variables.docenddate[i.find('./ID').text] = datetime.strptime(i.find('./EndDate').text[:-3], '%Y%m%d%H%M%S')
+            tempdesc = i.find('./Description').text
+            if tempdesc is None:
+                variables.docdescription[i.find('./ID').text] = ''
+            else:
+                variables.docdescription[i.find('./ID').text] = tempdesc.replace('\\\\', '\\')
+            temptag = i.find('./Tag').text
+            if temptag is None:
+                variables.doctag[i.find('./ID').text] = ''
+            else:
+                variables.doctag[i.find('./ID').text] = temptag.replace('\\\\', '\\')
 
         DocList.docnames = variables.docnames
 
