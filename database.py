@@ -1,5 +1,6 @@
 import pypyodbc
 import xml.etree.ElementTree as ET
+from log import Log
 
 class Query:
 
@@ -17,7 +18,12 @@ class Query:
         user = root.find('./DatabaseSettings/User').text
         password = root.find('./DatabaseSettings/Password').text
 
-        connection = pypyodbc.connect('DRIVER={' + driver + '};SERVER=' + server + ';DATABASE=' + database + ';uid=' + user + ';pwd=' + password + '')
+        Log.writetolog(Log, 'Attempting to connect to the database:')
+        try:
+            connection = pypyodbc.connect('DRIVER={' + driver + '};SERVER=' + server + ';DATABASE=' + database + ';uid=' + user + ';pwd=' + password + '')
+        except pypyodbc.DatabaseError:
+            Log.writetolog(Log, 'Database connection unsuccessful.')
+        Log.writetolog(Log, 'Database connection successful.')
         cursor = connection.cursor()
         sqlcommand = sql
         cursor.execute(sqlcommand)

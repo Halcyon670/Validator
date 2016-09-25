@@ -9,8 +9,8 @@ import variables
 from other import Other
 from xlsx import xlsxsheet
 import xlsxwriter
-from datetime import date
 from datetime import datetime
+from log import Log
 
 class ValidationMain(tkinter.Tk):
 
@@ -30,8 +30,15 @@ class ValidationMain(tkinter.Tk):
             self.frames[F] = frame
             frame.grid(row=0, column=0, sticky='nsew')
 
-    # Automatically go to the first frame on startup
+        # Automatically go to the first frame on startup
         self.show_frame(StartPage)
+
+        # Clear the log file
+        file = open('log.txt', 'w')
+        file.write('')
+        file.close()
+
+        Log.writetolog(Log, 'Successfully purged prior log and started a new one.')
 
     # Define show_frame: this takes frames and moves them to the front.
     def show_frame(self, cont):
@@ -286,6 +293,8 @@ class DocList(tkinter.Frame):
         Confirmation.docqueries = variables.docqueries
         Confirmation.docnames = variables.docnames
 
+        Log.writetolog(Log, 'Moving forward with the following docs: ' + str(variables.valdocs))
+
         Confirmation.populate(Confirmation, Confirmation.valdocs, Confirmation.docqueries)
 
         controller.show_frame(Confirmation)
@@ -352,6 +361,8 @@ class Confirmation(tkinter.Frame):
             Confirmation.docwhere = reformat.Isolation.wherelist(reformat, docqueries[valdocs[0]])
             Confirmation.docwhereand = reformat.Isolation.whereand(reformat, docqueries[valdocs[0]])
 
+            Log.writetolog(Log, 'Checking ' + str(valdocs[0]) + ' (' + str(variables.docnames[valdocs[0]]) + '):' + '\n\tQuery: ' + str(variables.docqueries[valdocs[0]]) + '\n\tDocAggs: ' + str(Confirmation.docaggs) + '\n\tDocAggDict: ' + str(Confirmation.docaggdict) + '\n\tDocJoins: ' + str(Confirmation.docjoins) + 'DocJoinDict: ' + str(Confirmation.docjoindict) + '\n\tDocWhere: ' + str(Confirmation.docwhere) + '\n\tDocWhereAnd: ' + str(Confirmation.docwhereand))
+
             for i in Confirmation.docaggs:
                 Confirmation.metriclistbox.insert(Confirmation.docaggs.index(i), i)
 
@@ -364,21 +375,20 @@ class Confirmation(tkinter.Frame):
             docresults = {}
             temp = ''
             for i in variables.valdocs:
+                Log.writetolog(Log, 'Now attempting to run the query for ' + str(i) + ':')
                 try:
-                    print(variables.docqueries[i])
-                    print(variables.finalqueries[i])
                     temp = database.Query.runquery(Confirmation, variables.finalqueries[i])
                     docresults[i] = temp
+                    Log.writetolog(Log, 'Query successfully run. Here are the results:\n\t' + temp)
                     temp = ''
                 except pypyodbc.ProgrammingError:
                     variables.valdocs.remove(i)
-                    print('Error!')
+                    Log.writetolog(Log, 'An error has occured in this query. Please run the query for more information.')
 
-            workbook = xlsxwriter.Workbook('DV_20160921.xlsx')
+            workbook = xlsxwriter.Workbook('DV_20160925.xlsx')
 
             for i in variables.valdocs:
                 xlsxsheet.addsheet(xlsxsheet, workbook, variables.docnames[i], 'http://app5.internal.bis2.net/index.html?id=' + str(i), str(variables.docstartdate[i]) + ' - ' + str(variables.docenddate[i]), variables.doclastmodified[i], variables.docaggs[i], docresults[i], [], variables.finalqueries[i])
-
 
     def cont(self):
 
@@ -392,6 +402,7 @@ class Confirmation(tkinter.Frame):
             userrestrictlist.append(Confirmation.restrictlistbox.get(i))
 
         variables.finalqueries[Confirmation.valdocs[0]] = reformat.Reconstruction.recombine(reformat, Confirmation.docjoins, useragglist, Confirmation.docwhere, Confirmation.docaggdict, Confirmation.docjoindict, Confirmation.docwhereand, userrestrictlist)
+        Log.writetolog(Log, 'Final data about ' + str(Confirmation.valdocs[0]) + ':' + '\n\tUserAggList: ' + str(useragglist) + '\n\tUserRestrictList: ' + str(userrestrictlist) + '\n\tFinalQuery: ' + str(variables.finalqueries[Confirmation.valdocs[0]]))
         variables.docaggs[Confirmation.valdocs[0]] = useragglist
 
         Confirmation.docaggs = []

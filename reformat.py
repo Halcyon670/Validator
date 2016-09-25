@@ -1,4 +1,3 @@
-from log import Log
 from other import Other
 
 
@@ -116,7 +115,6 @@ class SectionStrip:
             else:
                 break
 
-        Log.writetolog(Log, 'Successfully simplified the query to the main SELECT.')
         return sql
 
     def stripaggs(self, sql):
@@ -162,7 +160,6 @@ class SectionStrip:
                 temp += subselect[pos]
                 pos += 1
 
-        Log.writetolog(Log, 'Successfully stripped the aggregates: ' + str(aggfinal))
         return aggfinal
 
     def stripjoins(self, sql):
@@ -217,7 +214,6 @@ class SectionStrip:
 
             joinfinal.append(tempfull)
 
-        Log.writetolog(Log, 'Successfully stripped the joins: ' + str(joinfinal))
         return joinfinal
 
     def stripwhere(self, sql):
@@ -257,7 +253,6 @@ class SectionStrip:
             else:
                 wherefinal += temp
 
-        Log.writetolog(Log, 'Successfully stripped the WHERE: ' + str(wherefinal))
         return wherefinal
 
 
