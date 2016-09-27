@@ -85,5 +85,3 @@ class xlsxsheet:
         n += 2
 
         worksheet.insert_textbox(n, 0, sql, textboxoption)
-
-        workbook.close()

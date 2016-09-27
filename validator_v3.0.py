@@ -11,6 +11,7 @@ from xlsx import xlsxsheet
 import xlsxwriter
 from datetime import datetime
 from log import Log
+import webbrowser
 
 class ValidationMain(tkinter.Tk):
 
@@ -351,6 +352,7 @@ class Confirmation(tkinter.Frame):
         # Clear the listboxes before moving on
         Confirmation.metriclistbox.delete(0, 100000)
         Confirmation.restrictlistbox.delete(0, 10000)
+        removeddocs = []
 
         # Check to see if we are at the end of the list. If we are, move on to the next piece.
         if len(valdocs) > 0 is not None:
@@ -379,16 +381,22 @@ class Confirmation(tkinter.Frame):
                 try:
                     temp = database.Query.runquery(Confirmation, variables.finalqueries[i])
                     docresults[i] = temp
-                    Log.writetolog(Log, 'Query successfully run. Here are the results:\n\t' + temp)
+                    Log.writetolog(Log, 'Query successfully run. Here are the results:\n\t' + str(temp))
                     temp = ''
                 except pypyodbc.ProgrammingError:
-                    variables.valdocs.remove(i)
-                    Log.writetolog(Log, 'An error has occured in this query. Please run the query for more information.')
+                    removeddocs.append(i)
+                    Log.writetolog(Log, 'An error has occurred in this query. Please run the query in SQL Server for more information.')
+
+            for i in removeddocs:
+                variables.valdocs.remove(i)
 
             workbook = xlsxwriter.Workbook('DV_20160925.xlsx')
 
             for i in variables.valdocs:
+                Log.writetolog(Log, 'Attempting to create the excel sheet for ' + str(i))
                 xlsxsheet.addsheet(xlsxsheet, workbook, variables.docnames[i], 'http://app5.internal.bis2.net/index.html?id=' + str(i), str(variables.docstartdate[i]) + ' - ' + str(variables.docenddate[i]), variables.doclastmodified[i], variables.docaggs[i], docresults[i], [], variables.finalqueries[i])
+                webbrowser.open_new_tab('http://app5.internal.bis2.net/index.html?id=' + str(i))
+                Log.writetolog(Log, 'Excel sheet for ' + str(i) + ' successful.')
 
     def cont(self):
 
