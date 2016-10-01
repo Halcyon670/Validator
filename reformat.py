@@ -504,7 +504,6 @@ class Reconstruction:
         joinpos = 0
         wherepos = 0
 
-
         joinprog.append(joinorder[joinpos])
         while True:
 
@@ -522,6 +521,8 @@ class Reconstruction:
                     elif Formatting.singletablewherecheck(Formatting, joinprog[joinpos], i) == True and Formatting.multitablewherecheck(Formatting, joinorder, i) == False:
                         whereprog.append(i)
                         wherelist.remove(i)
+
+
 
             finalquery += Reconstruction.selectreconstruct(Reconstruction, aggorder, aggdict, joinprog, joinprog[joinpos], '') + Reconstruction.joinreconstruct(Reconstruction, joinprog, joindict) + Reconstruction.wherereconstruct(Reconstruction, whereprog, whereand)
 

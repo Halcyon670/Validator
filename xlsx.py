@@ -1,5 +1,6 @@
 import xlsxwriter
 import other
+import sqlparse
 
 
 class xlsxsheet:
@@ -23,7 +24,7 @@ class xlsxsheet:
         resultsexplanationformat = workbook.add_format({'fg_color': '#B4C6E7', 'bold': True, 'border': 2})
         concatdatagridformat = workbook.add_format({'fg_color': '#C6E0B4', 'bold': True, 'border': 2})
         subtractdatagridformat = workbook.add_format({'fg_color': '#C6E0B4', 'border': 2})
-        textboxoption = {'width': 1000, 'height': 10000}
+        textboxoption = {'width': 1000, 'height': 20000}
 
         worksheet.set_column(0, 10, 20)
         worksheet.write(0, 0, name, nameformat)
@@ -84,4 +85,4 @@ class xlsxsheet:
 
         n += 2
 
-        worksheet.insert_textbox(n, 0, sql, textboxoption)
+        worksheet.insert_textbox(n, 0, sqlparse.format(sql, reindent=True, keyword_case='upper'), textboxoption)
