@@ -462,12 +462,18 @@ class Reconstruction:
         # Begin writing the final query based on the input from the user
         queryfinal = 'SELECT'
 
-        queryfinal += ' \'Step ' + str(len(joinorder)) + restrictlevel + '\' AS Step, '
+        if restrictlevel > 0:
+            queryfinal += ' \'Step ' + str(len(joinorder)) + Other.alphanumupper(Other, int(restrictlevel)) + '\' AS Step, '
+        else:
+            queryfinal += ' \'Step ' + str(len(joinorder)) + '\' AS Step, '
 
         for i in aggorder:
             queryfinal += aggdict[i] + ', '
 
-        queryfinal += '\'' + str(table) + '\' AS StepInfo '
+        if restrictlevel > 0:
+            queryfinal += '\'' + str(table) + ' (Restriction)\' AS StepInfo '
+        else:
+            queryfinal += '\'' + str(table) + '\' AS StepInfo '
 
         return queryfinal
 
@@ -507,26 +513,51 @@ class Reconstruction:
         joinprog.append(joinorder[joinpos])
         while True:
 
-            for j in range(20):
+            restrictlevel = 0
+            skipflag = 0
+            initrestrictlevel = 0
+            currentrestrict = []
+            for i in restrict:
+                if joinprog[joinpos] in i:
+                    restrictlevel += 1
+                    initrestrictlevel += 1
+                    skipflag = 1
+                    currentrestrict.append(i)
 
-                for i in wherelist:
+            while restrictlevel >= 0:
 
-                    # Check if there is more than one table in the predicate. If so, check whether more than one element is already present in joinprog. If so, append.
-                    if Formatting.multitablewherecheck(Formatting, joinorder, i) == True:
-                        if Formatting.singlemultiwhereelementcheck(Formatting, joinprog[joinpos], i, joinprog) == True:
+                for j in range(20):
+                    for i in wherelist:
+
+                        # Check if there is more than one table in the predicate. If so, check whether more than one element is already present in joinprog. If so, append.
+                        if Formatting.multitablewherecheck(Formatting, joinorder, i) and i not in restrict == True:
+                            if Formatting.singlemultiwhereelementcheck(Formatting, joinprog[joinpos], i, joinprog) == True:
+                                whereprog.append(i)
+                                wherelist.remove(i)
+
+                        # Check that there is only one table, and if there is only one, check whether its table is already in joinprog. If so, append.
+                        elif Formatting.singletablewherecheck(Formatting, joinprog[joinpos], i) == True and Formatting.multitablewherecheck(Formatting, joinorder, i) == False and i not in restrict:
                             whereprog.append(i)
                             wherelist.remove(i)
 
-                    # Check that there is only one table, and if there is only one, check whether its table is already in joinprog. If so, append.
-                    elif Formatting.singletablewherecheck(Formatting, joinprog[joinpos], i) == True and Formatting.multitablewherecheck(Formatting, joinorder, i) == False:
-                        whereprog.append(i)
-                        wherelist.remove(i)
+                if skipflag == 1:
+                    pass
 
+                elif len(currentrestrict) > 0:
+                    whereprog.append(currentrestrict[0])
+                    currentrestrict.remove(currentrestrict[0])
 
+                else:
+                    pass
 
-            finalquery += Reconstruction.selectreconstruct(Reconstruction, aggorder, aggdict, joinprog, joinprog[joinpos], '') + Reconstruction.joinreconstruct(Reconstruction, joinprog, joindict) + Reconstruction.wherereconstruct(Reconstruction, whereprog, whereand)
+                finalquery += Reconstruction.selectreconstruct(Reconstruction, aggorder, aggdict, joinprog, joinprog[joinpos], initrestrictlevel - restrictlevel) + Reconstruction.joinreconstruct(Reconstruction, joinprog, joindict) + Reconstruction.wherereconstruct(Reconstruction, whereprog, whereand)
+                if restrictlevel > 0:
+                    finalquery += ' UNION ALL '
 
-            joinpos += 1
+                if restrictlevel == 0:
+                    joinpos += 1
+                restrictlevel -= 1
+                skipflag = 0
 
             if joinpos >= len(joinorder):
                 break
