@@ -12,7 +12,7 @@
 		<Password>3Bx?zPaae</Password>
 	</DatabaseSettings>
 	<AdvancedSettings>
-		<StartingJoins>BIS2_GEO_Chairs,cqa</StartingJoins>
-		<EndingJoins>BIS2_Site</EndingJoins>
+		<StartingJoins>CRMDemo.dbo.BIS2_VW_Site</StartingJoins>
+		<EndingJoins>CRMDemo.dbo.BIS2_GEO_chairs,CRMDemo.dbo.cqa</EndingJoins>
 	</AdvancedSettings>
 </validatorconfig>

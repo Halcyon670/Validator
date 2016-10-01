@@ -363,6 +363,40 @@ class Confirmation(tkinter.Frame):
             Confirmation.docwhere = reformat.Isolation.wherelist(reformat, docqueries[valdocs[0]])
             Confirmation.docwhereand = reformat.Isolation.whereand(reformat, docqueries[valdocs[0]])
 
+            # Move the specified joins to their proper places
+            root=ET.parse('config.xml')
+            startjoins = root.find('./AdvancedSettings/StartingJoins').text
+            endjoins = root.find('./AdvancedSettings/EndingJoins').text
+            startjoinlist = []
+            endjoinlist = []
+            temp = ''
+
+            for i in startjoins:
+                if i != ',':
+                    temp += i
+                else:
+                    startjoinlist.append(temp)
+                    temp = ''
+            startjoinlist.append(temp)
+            temp = ''
+
+            for i in endjoins:
+                if i != ',':
+                    temp += i
+                else:
+                    endjoinlist.append(temp)
+                    temp = ''
+            endjoinlist.append(temp)
+            temp = ''
+
+            for i in Confirmation.docjoins:
+                if i in endjoinlist:
+                    Confirmation.docjoins.remove(i)
+                    Confirmation.docjoins.append(i)
+
+                elif i in startjoinlist:
+                    Confirmation.docjoins.insert(1, Confirmation.docjoins.pop(Confirmation.docjoins.index(i)))
+
             Log.writetolog(Log, 'Checking ' + str(valdocs[0]) + ' (' + str(variables.docnames[valdocs[0]]) + '):' + '\n\tQuery: ' + str(variables.docqueries[valdocs[0]]) + '\n\tDocAggs: ' + str(Confirmation.docaggs) + '\n\tDocAggDict: ' + str(Confirmation.docaggdict) + '\n\tDocJoins: ' + str(Confirmation.docjoins) + 'DocJoinDict: ' + str(Confirmation.docjoindict) + '\n\tDocWhere: ' + str(Confirmation.docwhere) + '\n\tDocWhereAnd: ' + str(Confirmation.docwhereand))
 
             for i in Confirmation.docaggs:
