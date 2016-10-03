@@ -11,9 +11,12 @@ doctag = {}
 docaggs = {}
 
 # Variables over local list of docs:
-
 valdocs = []
 datasetids = {}
 docjson = {}
 docqueries = {}
 finalqueries = {}
+
+# System variables
+errorcount = 0
+errordocs = []

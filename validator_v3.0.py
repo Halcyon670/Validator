@@ -296,7 +296,7 @@ class DocList(tkinter.Frame):
 
         Log.writetolog(Log, 'Moving forward with the following docs: ' + str(variables.valdocs))
 
-        Confirmation.populate(Confirmation, Confirmation.valdocs, Confirmation.docqueries)
+        Confirmation.populate(Confirmation, Confirmation.valdocs, Confirmation.docqueries, controller)
 
         controller.show_frame(Confirmation)
 
@@ -344,10 +344,10 @@ class Confirmation(tkinter.Frame):
         Confirmation.restrictlistbox = tkinter.Listbox(self, height=37, width=70, selectmode='multiple', yscrollcommand=restrictscrolly.set, xscrollcommand=restrictscrollx.set, exportselection=0)
         Confirmation.restrictlistbox.grid(column=1, row=2, padx=10, sticky='n')
 
-        continuebutton = tkinter.Button(self, text='Continue', command=lambda: self.cont())
+        continuebutton = tkinter.Button(self, text='Continue', command=lambda: self.cont(controller))
         continuebutton.grid(column=2, row=2, padx=80, ipadx=10, ipady=10)
 
-    def populate(self, valdocs, docqueries):
+    def populate(self, valdocs, docqueries, controller):
 
         # Clear the listboxes before moving on
         Confirmation.metriclistbox.delete(0, 100000)
@@ -410,6 +410,7 @@ class Confirmation(tkinter.Frame):
         else:
             docresults = {}
             temp = ''
+
             for i in variables.valdocs:
                 Log.writetolog(Log, 'Now attempting to run the query for ' + str(i) + ':')
                 try:
@@ -418,11 +419,15 @@ class Confirmation(tkinter.Frame):
                     Log.writetolog(Log, 'Query successfully run. Here are the results:\n\t' + str(temp))
                     temp = ''
                 except pypyodbc.ProgrammingError:
+                    variables.errorcount += 1
+                    variables.errordocs.append(i)
                     removeddocs.append(i)
                     Log.writetolog(Log, 'An error has occurred in this query. Please run the query in SQL Server for more information.')
 
             for i in removeddocs:
                 variables.valdocs.remove(i)
+
+            Log.writetolog(Log, 'Queries completed with ' + str(variables.errorcount) + ' errors.\n\tErrored documents are: ' + str(variables.errordocs) + '.')
 
             workbook = xlsxwriter.Workbook('DV_20160925.xlsx')
 
@@ -432,7 +437,7 @@ class Confirmation(tkinter.Frame):
                 webbrowser.open_new_tab('http://app5.internal.bis2.net/index.html?id=' + str(i))
                 Log.writetolog(Log, 'Excel sheet for ' + str(i) + ' successful.')
 
-    def cont(self):
+    def cont(self, controller):
 
         useragglist = []
         userrestrictlist = []
@@ -455,7 +460,7 @@ class Confirmation(tkinter.Frame):
         Confirmation.docwhereand = {}
         Confirmation.valdocs.remove(Confirmation.valdocs[0])
 
-        Confirmation.populate(Confirmation, Confirmation.valdocs, Confirmation.docqueries)
+        Confirmation.populate(Confirmation, Confirmation.valdocs, Confirmation.docqueries, controller)
 
 
 class Settings(tkinter.Frame):

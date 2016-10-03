@@ -26,7 +26,10 @@ class xlsxsheet:
         subtractdatagridformat = workbook.add_format({'fg_color': '#C6E0B4', 'border': 2})
         textboxoption = {'width': 1000, 'height': 20000}
 
-        worksheet.set_column(0, 10, 20)
+        width = len(metricnames) + 1
+
+        worksheet.set_column(0, width, 20)
+        worksheet.set_column(width, width, 40)
         worksheet.write(0, 0, name, nameformat)
         worksheet.write(0, 3, url)
         worksheet.write(1, 0, daterange)
@@ -48,6 +51,9 @@ class xlsxsheet:
                 m += 1
             n += 1
             m = 0
+
+        for i in range(width - 1):
+            datagrid.append('')
 
         worksheet.write(n, m, 'Datagrid', datagridformat)
         m += 1
