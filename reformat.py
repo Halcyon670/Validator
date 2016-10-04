@@ -220,41 +220,67 @@ class SectionStrip:
         sql = SectionStrip.stripouterquery(SectionStrip, sql)
         wherestructure = Formatting.keywordsearch(Formatting, ['WHERE'], sql)
 
-        wherelocation = 1
-        for i in wherestructure:
-            if i > wherelocation:
-                wherelocation = i
+        # Check to see if there even IS a WHERE clause. If not, return an empty string. -----------------------------------------
+        whereflag = False
+        parenflag = 0
+        temp = ''
 
-        wherefinal = ''
-        pos = wherelocation
-        parencount = 0
+        for i in sql:
+            if i == '(':
+                parenflag += 1
+            elif i == ')':
+                parenflag -=1
+            elif i == ' ':
+                if temp.upper() == 'WHERE' and parenflag == 0:
+                    whereflag = True
+                    temp = ''
+                else:
+                    temp = ''
+            else:
+                temp += i
+        # -----------------------------------------------------------------------------------------------------------------------
 
-        while True:
-            temp = ''
+        # If there is a WHERE clause, cycle through it character by character and pull it out, paying attention to the GROUP BY and ORDER BY clauses.
+        # Otherwise, return an empty string. ------------------------------------------------------------------------------------
+        if whereflag == True:
+            wherelocation = 1
+            for i in wherestructure:
+                if i > wherelocation:
+                    wherelocation = i
+
+            wherefinal = ''
+            pos = wherelocation
+            parencount = 0
 
             while True:
+                temp = ''
 
-                if len(sql) < pos:
-                    break
-                if sql[pos] == ' ':
+                while True:
+
+                    if len(sql) < pos:
+                        break
+                    if sql[pos] == ' ':
+                        temp += sql[pos]
+                        pos += 1
+                        break
+                    elif sql[pos] == '(':
+                        parencount += 1
+                    elif sql[pos] == ')':
+                        parencount -= 1
+
                     temp += sql[pos]
                     pos += 1
+
+                if parencount == 0 and (temp in ['GROUP ', ' ORDER '] or len(sql) < pos):
                     break
-                elif sql[pos] == '(':
-                    parencount += 1
-                elif sql[pos] == ')':
-                    parencount -= 1
+                else:
+                    wherefinal += temp
 
-                temp += sql[pos]
-                pos += 1
+            return wherefinal
 
-            if parencount == 0 and (temp in ['GROUP ', ' ORDER '] or len(sql) < pos):
-                break
-            else:
-                wherefinal += temp
-
-        return wherefinal
-
+        else:
+            wherefinal = ''
+            return wherefinal
 
 class Isolation:
 
@@ -356,103 +382,120 @@ class Isolation:
     def wherelist(self, sql):
         where = SectionStrip.stripwhere(SectionStrip, sql)
 
-        # Remove the WHERE keyword from the beginning
-        where = where[6::]
+        # Check to see if the WHERE clause has any length. If not, return an empty list. -------------------------------------
+        if len(where) != 0:
 
-        # Remove the outermost parentheses
-        if where[0] and where[1] == '(':
-            where = Formatting.parensubstring(Formatting, where, 1)
+            # Remove the WHERE keyword from the beginning
+            where = where[6::]
 
-        # Cycle through the string, word by word, stopping at any AND / OR / NOT that is not whithin parentheses, or the end of line.
-        wherefinal = []
-        pos = 0
-        parencount = 0
-        tempfull = ''
-        while True:
-            temp = ''
+            # Remove the outermost parentheses
+            if where[0] and where[1] == '(':
+                where = Formatting.parensubstring(Formatting, where, 1)
 
+            # Cycle through the string, word by word, stopping at any AND / OR / NOT that is not whithin parentheses, or the end of line.
+            wherefinal = []
+            pos = 0
+            parencount = 0
+            tempfull = ''
             while True:
+                temp = ''
+
+                while True:
+
+                    if pos >= len(where):
+                        break
+                    elif where[pos] == ' ':
+                        temp += where[pos]
+                        pos += 1
+                        break
+                    elif where[pos] == '(':
+                        parencount += 1
+                        temp += where[pos]
+                        pos += 1
+                    elif where[pos] == ')':
+                        parencount -= 1
+                        temp += where[pos]
+                        pos += 1
+                    else:
+                        temp += where[pos]
+                        pos += 1
 
                 if pos >= len(where):
+                    tempfull += temp
+                    wherefinal.append(tempfull)
                     break
-                elif where[pos] == ' ':
-                    temp += where[pos]
-                    pos += 1
-                    break
-                elif where[pos] == '(':
-                    parencount += 1
-                    temp += where[pos]
-                    pos += 1
-                elif where[pos] == ')':
-                    parencount -= 1
-                    temp += where[pos]
-                    pos += 1
+                if temp in ['AND ', 'OR ', 'NOT '] and parencount == 0:
+                    wherefinal.append(tempfull)
+                    # wherefinal.append(temp)
+                    tempfull = ''
                 else:
-                    temp += where[pos]
-                    pos += 1
+                    tempfull += temp
+            return wherefinal
 
-            if pos >= len(where):
-                tempfull += temp
-                wherefinal.append(tempfull)
-                break
-            if temp in ['AND ', 'OR ', 'NOT '] and parencount == 0:
-                wherefinal.append(tempfull)
-                # wherefinal.append(temp)
-                tempfull = ''
-            else:
-                tempfull += temp
-        return wherefinal
+        else:
+            wherefinal = []
+            return wherefinal
+        # ---------------------------------------------------------------------------------------------------------------
 
     def whereand(self, sql):
         where = SectionStrip.stripwhere(SectionStrip, sql)
 
-        # Remove the WHERE keyword from the beginning
-        where = where[6::]
+        # Also a check on whether the WHERE even exists. ------------------------------------------------------------------
+        if len(where) != 0:
 
-        # Remove the outermost parentheses
-        if where[0] and where[1] == '(':
-            where = Formatting.parensubstring(Formatting, where, 1)
+            # Remove the WHERE keyword from the beginning
+            where = where[6::]
 
-        # Cycle through the string, word by word, stopping at any AND / OR / NOT that is not whithin parentheses, or the end of line.
-        wherefinal = {}
-        pos = 0
-        parencount = 0
-        tempfull = ''
-        key = 'start'
-        while True:
-            temp = ''
+            # Remove the outermost parentheses
+            if where[0] and where[1] == '(':
+                where = Formatting.parensubstring(Formatting, where, 1)
 
+            # Cycle through the string, word by word, stopping at any AND / OR / NOT that is not whithin parentheses, or the end of line.
+            wherefinal = {}
+            pos = 0
+            parencount = 0
+            tempfull = ''
+            key = 'start'
             while True:
+                temp = ''
+
+                while True:
+
+                    if pos >= len(where):
+                        break
+                    elif where[pos] == ' ':
+                        temp += where[pos]
+                        pos += 1
+                        break
+                    elif where[pos] == '(':
+                        parencount += 1
+                        temp += where[pos]
+                        pos += 1
+                    elif where[pos] == ')':
+                        parencount -= 1
+                        temp += where[pos]
+                        pos += 1
+                    else:
+                        temp += where[pos]
+                        pos += 1
 
                 if pos >= len(where):
+                    tempfull += temp
+                    wherefinal[tempfull] = key
                     break
-                elif where[pos] == ' ':
-                    temp += where[pos]
-                    pos += 1
-                    break
-                elif where[pos] == '(':
-                    parencount += 1
-                    temp += where[pos]
-                    pos += 1
-                elif where[pos] == ')':
-                    parencount -= 1
-                    temp += where[pos]
-                    pos += 1
+                if temp in ['AND ', 'OR ', 'NOT '] and parencount == 0:
+                    wherefinal[tempfull] = key
+                    tempfull = ''
+                    key = temp
                 else:
-                    temp += where[pos]
-                    pos += 1
+                    tempfull += temp
+            return wherefinal
 
-            if pos >= len(where):
-                tempfull += temp
-                wherefinal[tempfull] = key
-                break
-            if temp in ['AND ', 'OR ', 'NOT '] and parencount == 0:
-                wherefinal[tempfull] = key
-                tempfull = ''
-                key = temp
-            else:
-                tempfull += temp
-        return wherefinal
+        else:
+            wherefinal = {}
+            return wherefinal
+
+        # ---------------------------------------------------------------------------------------------------------------
 
 class Reconstruction:
 
@@ -489,19 +532,25 @@ class Reconstruction:
 
     def wherereconstruct(self, wherelist, whereand):
 
-        # Reconstruct the where clause
-        wherefinal = 'WHERE '
+        # Reconstruct the where clause, if it exists. If not, return an empty string.
 
-        for i in wherelist:
-            if whereand[i] in ['and ', 'AND ']:
-                wherefinal += ' AND ' + i
-            elif whereand[i] in ['or ', 'OR ']:
-                wherefinal += ' OR ' + i
-            elif whereand[i] in ['not ', 'NOT ']:
-                wherefinal += ' NOT ' + i
-            elif whereand[i] == 'start':
-                wherefinal += i
-        return wherefinal
+        if len(wherelist) > 0:
+            wherefinal = 'WHERE '
+
+            for i in wherelist:
+                if whereand[i] in ['and ', 'AND ']:
+                    wherefinal += ' AND ' + i
+                elif whereand[i] in ['or ', 'OR ']:
+                    wherefinal += ' OR ' + i
+                elif whereand[i] in ['not ', 'NOT ']:
+                    wherefinal += ' NOT ' + i
+                elif whereand[i] == 'start':
+                    wherefinal += i
+            return wherefinal
+
+        else:
+            wherefinal = ''
+            return wherefinal
 
     def recombine(self, joinorder, aggorder, wherelist, aggdict, joindict, whereand, restrict):
         finalquery = ''
