@@ -159,6 +159,8 @@ class DocList(tkinter.Frame):
 
     # Populates the listboxes from docxml.xml. DocList.listbox must be empty for this to work properly.
     def populate(self):
+        DocList.listbox.delete(0, 10000)
+
         file = open('docxml.xml', 'r')
         doclist = ''
         for i in file:
