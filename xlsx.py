@@ -11,7 +11,10 @@ class xlsxsheet:
 
         xlsxsheet.xlsxcount += 1
 
-        worksheet = workbook.add_worksheet(str(xlsxsheet.xlsxcount) + '-' + name[:29])
+        if xlsxsheet.xlsxcount < 10:
+            worksheet = workbook.add_worksheet(str(xlsxsheet.xlsxcount) + '-' + name[:29])
+        elif xlsxsheet.xlsxcount >= 10:
+            worksheet = workbook.add_worksheet(str(xlsxsheet.xlsxcount) + '-' + name[:28])
 
         nameformat = workbook.add_format({'bold': True, 'underline': True, 'font_color': 'blue', 'font_size': 11})
         lastmodifiedformat = workbook.add_format({'font_color': 'purple', 'num_format': 'yyyy-mm-dd hh:mm:ss'})
