@@ -1,3 +1,4 @@
+from datetime import datetime
 
 class Other:
 
@@ -20,3 +21,26 @@ class Other:
                 newtable += j
 
         return newtable
+
+    def sortlist(self, list, dict):
+        newlist = []
+        tempdict = {}
+        temp = datetime.strptime('1970-01-01', '%Y-%m-%d')
+        value = ''
+
+        for i in list:
+            tempdict[i] = dict[i]
+
+        while len(tempdict) > 0:
+            for i in tempdict:
+                if tempdict[i] > temp:
+                    temp = tempdict[i]
+                    value = i
+                else:
+                    pass
+            newlist.append(value)
+            del tempdict[value]
+            value = ''
+            temp = datetime.strptime('1970-01-01', '%Y-%m-%d')
+
+        return newlist

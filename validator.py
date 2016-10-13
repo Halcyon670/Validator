@@ -56,7 +56,7 @@ class StartPage(tkinter.Frame):
         label = tkinter.Label(self, text='Validator\n', font='bold')
         label.grid(column=1, row=0, pady=10, padx=10)
 
-        changelog = tkinter.Label(self, font=('Times New Roman', 12), text='Current Release: v3.0\n\nThis is a complete overhaul of the original validator. The purpose of this one is to connect directly to the database and automate the entire process.\n\nAny issues, ideas, death threats, etc. can be sent to cory.clanin@vizexplorer.com', relief='ridge', width=110, height=25)
+        changelog = tkinter.Label(self, font=('Times New Roman', 12), text='Current Release: v3.0\n\nThis is a complete overhaul of the original validator. The purpose of this one is to connect directly to the database and automate the entire process.\n\nAny issues, ideas, etc. can be sent to cory.clanin@vizexplorer.com', relief='ridge', width=110, height=25)
         changelog.grid(column=1, row=1, sticky='ew', padx=50)
 
         singleval = tkinter.Button(self, text="Begin!", pady=10, padx=10, fg="black", command=lambda: controller.show_frame(DocList))
@@ -188,6 +188,9 @@ class DocList(tkinter.Frame):
                 variables.doctag[i.find('./ID').text] = ''
             else:
                 variables.doctag[i.find('./ID').text] = temptag.replace('\\\\', '\\')
+
+        # Sort the list in descending order by LastModified
+        variables.docids = Other.sortlist(Other, variables.docids, variables.doclastmodified)
 
         DocList.docnames = variables.docnames
 
