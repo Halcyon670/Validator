@@ -361,6 +361,7 @@ class Confirmation(tkinter.Frame):
 
         # Check to see if we are at the end of the list. If we are, move on to the next piece.
         if len(valdocs) > 0 is not None:
+            Log.writetolog(Log, 'Remaining docs: ' + str(valdocs))
             Confirmation.docaggs = reformat.Isolation.aggorder(reformat, docqueries[valdocs[0]])
             Confirmation.docaggdict = reformat.Isolation.aggdict(reformat, docqueries[valdocs[0]], Confirmation.docaggs)
             Confirmation.docjoins = reformat.Isolation.joinorder(reformat, docqueries[valdocs[0]])
@@ -402,7 +403,7 @@ class Confirmation(tkinter.Frame):
                 elif i in startjoinlist:
                     Confirmation.docjoins.insert(1, Confirmation.docjoins.pop(Confirmation.docjoins.index(i)))
 
-            Log.writetolog(Log, 'Checking ' + str(valdocs[0]) + ' (' + str(variables.docnames[valdocs[0]]) + '):' + '\n\tQuery: ' + str(variables.docqueries[valdocs[0]]) + '\n\tDocAggs: ' + str(Confirmation.docaggs) + '\n\tDocAggDict: ' + str(Confirmation.docaggdict) + '\n\tDocJoins: ' + str(Confirmation.docjoins) + 'DocJoinDict: ' + str(Confirmation.docjoindict) + '\n\tDocWhere: ' + str(Confirmation.docwhere) + '\n\tDocWhereAnd: ' + str(Confirmation.docwhereand))
+            Log.writetolog(Log, 'Checking ' + str(valdocs[0]) + ' (' + str(variables.docnames[valdocs[0]]) + '):' + '\n\tQuery: ' + str(variables.docqueries[valdocs[0]]) + '\n\tDocAggs: ' + str(Confirmation.docaggs) + '\n\tDocAggDict: ' + str(Confirmation.docaggdict) + '\n\tDocJoins: ' + str(Confirmation.docjoins) + '\n\tDocJoinDict: ' + str(Confirmation.docjoindict) + '\n\tDocWhere: ' + str(Confirmation.docwhere) + '\n\tDocWhereAnd: ' + str(Confirmation.docwhereand))
 
             for i in Confirmation.docaggs:
                 Confirmation.metriclistbox.insert(Confirmation.docaggs.index(i), i)

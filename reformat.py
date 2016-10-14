@@ -328,7 +328,6 @@ class Isolation:
             pos = 0
 
             while True:
-
                 tempword = ''
                 if readflag == 0:
                     while True:
@@ -341,12 +340,39 @@ class Isolation:
 
                 elif readflag == 1:
                     while True:
-                        if i[pos] in [' ', '*'] or pos > len(i):
+                        if i[pos] in [' ', '*'] or (i[pos] == '(' and readflag == 1) or pos > len(i):
                             pos += 1
                             break
                         else:
                             temp += i[pos]
                             pos += 1
+
+                    # Handle the possibility of an alias
+                    if ' AS ' in i[pos:] and '*/' not in i[pos:]: # Checks for the possibility of an alias while ignoring the telltale comment sign of an SQLTC
+                        newtemp = ''
+                        asflag = 0
+                        temp = ''
+
+                        while True:
+                            newtemp = ''
+                            while True:
+                                if pos >= len(i):
+                                    break
+                                elif i[pos] != ' ' and asflag == 0 and pos < len(i):
+                                    newtemp += i[pos]
+                                    pos += 1
+                                elif i[pos] == ' ' and asflag == 0 and pos < len(i):
+                                    pos += 1
+                                    break
+                                elif asflag == 1 and pos < len(i):
+                                    temp += i[pos]
+                                    pos += 1
+
+
+                            if newtemp == 'AS' and asflag == 0:
+                                asflag = 1
+                            elif asflag == 1:
+                                break
 
                     joinorder.append(temp)
                     break
@@ -360,7 +386,7 @@ class Isolation:
                 elif readflag == 0 and tempword == 'JOIN' and i[pos] == '(':
                     continue
 
-                elif readflag == 0 and tempword == 'SqlTableCalculator:':
+                elif readflag == 0 and tempword in ['SqlTableCalculator:', 'SqlTableCalculator']:
                     readflag = 1
 
                 else:
