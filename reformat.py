@@ -348,7 +348,7 @@ class Isolation:
                             pos += 1
 
                     # Handle the possibility of an alias
-                    if ' AS ' in i[pos:] and '*/' not in i[pos:]: # Checks for the possibility of an alias while ignoring the telltale comment sign of an SQLTC
+                    if ' AS ' in i[pos:] and '*/' not in i[pos:] and ('SELECT' not in i[pos:] and 'FROM' not in i[pos:]): # Checks for the possibility of an alias while ignoring the telltale comment sign of an SQLTC
                         newtemp = ''
                         asflag = 0
                         temp = ''
