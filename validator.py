@@ -13,6 +13,7 @@ from datetime import datetime
 from log import Log
 import webbrowser
 
+
 class ValidationMain(tkinter.Tk):
 
     # Initialize the frames on startup
@@ -26,7 +27,7 @@ class ValidationMain(tkinter.Tk):
 
         self.frames = {}
 
-        for F in (StartPage, DocList, Confirmation, Settings):
+        for F in (StartPage, DocList, Confirmation, Settings, RunFrame):
             frame = F(container, self)
             self.frames[F] = frame
             frame.grid(row=0, column=0, sticky='nsew')
@@ -414,34 +415,8 @@ class Confirmation(tkinter.Frame):
             Confirmation.docname.set(Confirmation.docnames[valdocs[0]])
 
         else:
-            docresults = {}
-            temp = ''
-
-            for i in variables.valdocs:
-                Log.writetolog(Log, 'Now attempting to run the query for ' + str(i) + ':')
-                try:
-                    temp = database.Query.runquery(Confirmation, variables.finalqueries[i])
-                    docresults[i] = temp
-                    Log.writetolog(Log, 'Query successfully run. Here are the results:\n\t' + str(temp))
-                    temp = ''
-                except pypyodbc.ProgrammingError:
-                    variables.errorcount += 1
-                    variables.errordocs.append(i)
-                    removeddocs.append(i)
-                    Log.writetolog(Log, 'An error has occurred in this query. Please run the query in SQL Server for more information.')
-
-            for i in removeddocs:
-                variables.valdocs.remove(i)
-
-            Log.writetolog(Log, 'Queries completed with ' + str(variables.errorcount) + ' errors.\n\tErrored documents are: ' + str(variables.errordocs) + '.')
-
-            workbook = xlsxwriter.Workbook('DV_20160925.xlsx')
-
-            for i in variables.valdocs:
-                Log.writetolog(Log, 'Attempting to create the excel sheet for ' + str(i))
-                xlsxsheet.addsheet(xlsxsheet, workbook, variables.docnames[i], 'http://app5.internal.bis2.net/index.html?id=' + str(i), str(variables.docstartdate[i]) + ' - ' + str(variables.docenddate[i]), variables.doclastmodified[i], variables.docaggs[i], docresults[i], [], variables.finalqueries[i])
-                webbrowser.open_new_tab('http://app5.internal.bis2.net/index.html?id=' + str(i))
-                Log.writetolog(Log, 'Excel sheet for ' + str(i) + ' successful.')
+            variables.removeddocs = removeddocs
+            controller.show_frame(RunFrame)
 
     def cont(self, controller):
 
@@ -597,6 +572,83 @@ class Settings(tkinter.Frame):
         root.write('config.xml')
 
         controller.show_frame(StartPage)
+
+
+class RunFrame(tkinter.Frame):
+
+    # Create a frame that will take note of progress as the tool runs.
+    def __init__(self, parent, controller):
+        tkinter.Frame.__init__(self, parent)
+        controller.minsize(width=1100, height=700)
+
+        RunFrame.progress1 = tkinter.StringVar()
+        RunFrame.progress2 = tkinter.StringVar()
+
+        RunFrame.progresslabel1 = tkinter.Label(self, textvariable=RunFrame.progress1)
+        RunFrame.progresslabel1.grid(row=0, column=0)
+
+        RunFrame.progresslabel2 = tkinter.Label(self, textvariable=RunFrame.progress2)
+        RunFrame.progresslabel2.grid(row=1, column=0)
+
+        runbutton = tkinter.Button(self, text='Run', command=lambda: self.run(variables.removeddocs))
+        runbutton.grid(row=2, column=0)
+
+    def run(self, removeddocs):
+        docresults = {}
+        temp = ''
+
+        for i in variables.valdocs:
+            RunFrame.progress1.set('Now working on ' + str(i))
+            RunFrame.progress2.set('Attempting to run in the database...')
+            RunFrame.progresslabel1.update()
+            RunFrame.progresslabel2.update()
+
+            Log.writetolog(Log, 'Now attempting to run the query for ' + str(i) + ':')
+            try:
+                temp = database.Query.runquery(Confirmation, variables.finalqueries[i])
+                docresults[i] = temp
+                Log.writetolog(Log, 'Query successfully run. Here are the results:\n\t' + str(temp))
+                RunFrame.progress2.set('Run Successful.')
+                RunFrame.progresslabel2.update()
+                temp = ''
+            except pypyodbc.ProgrammingError:
+                variables.errorcount += 1
+                variables.errordocs.append(i)
+                removeddocs.append(i)
+                Log.writetolog(Log, 'An error has occurred in this query. Please run the query in SQL Server for more information.')
+                RunFrame.progress2.set('Run Unsuccessful. Please see the log for details.')
+                RunFrame.progresslabel2.update()
+
+        for i in removeddocs:
+            variables.valdocs.remove(i)
+
+        Log.writetolog(Log, 'Queries completed with ' + str(variables.errorcount) + ' errors.\n\tErrored documents are: ' + str(variables.errordocs) + '.')
+
+        RunFrame.progress1.set('Queries finished. Now setting up xlsx docs...')
+        RunFrame.progresslabel1.update()
+        RunFrame.progress2.set('')
+        RunFrame.progresslabel2.update()
+
+        workbook = xlsxwriter.Workbook('DV_20160925.xlsx')
+
+        for i in variables.valdocs:
+            Log.writetolog(Log, 'Attempting to create the excel sheet for ' + str(i))
+            RunFrame.progress2.set('Creating doc for ' + str(i))
+            RunFrame.progresslabel2.update()
+            xlsxsheet.addsheet(xlsxsheet, workbook, variables.docnames[i], 'http://app5.internal.bis2.net/index.html?id=' + str(i), str(variables.docstartdate[i]) + ' - ' + str(variables.docenddate[i]), variables.doclastmodified[i], variables.docaggs[i], docresults[i], [], variables.finalqueries[i])
+            webbrowser.open_new_tab('http://app5.internal.bis2.net/index.html?id=' + str(i))
+            Log.writetolog(Log, 'Excel sheet for ' + str(i) + ' successful.')
+
+        RunFrame.progress2.set('')
+        RunFrame.progresslabel2.update()
+
+        if variables.errorcount == 0:
+            RunFrame.progress1.set('Documents completed with no errors.')
+            RunFrame.progresslabel1.update()
+
+        else:
+            RunFrame.progress1.set('Documents completed with ' + str(variables.errorcount) + 'errors. Please review the log for details.')
+            RunFrame.progresslabel1.update()
 
 # Run the program
 app = ValidationMain()

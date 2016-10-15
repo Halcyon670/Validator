@@ -16,6 +16,7 @@ datasetids = {}
 docjson = {}
 docqueries = {}
 finalqueries = {}
+removeddocs = []
 
 # System variables
 errorcount = 0

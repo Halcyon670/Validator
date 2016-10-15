@@ -356,7 +356,7 @@ class Isolation:
                         while True:
                             newtemp = ''
                             while True:
-                                if pos >= len(i):
+                                if pos >= len(i) or (asflag == 1 and i[pos] == ' '):
                                     break
                                 elif i[pos] != ' ' and asflag == 0 and pos < len(i):
                                     newtemp += i[pos]
@@ -367,7 +367,6 @@ class Isolation:
                                 elif asflag == 1 and pos < len(i):
                                     temp += i[pos]
                                     pos += 1
-
 
                             if newtemp == 'AS' and asflag == 0:
                                 asflag = 1
