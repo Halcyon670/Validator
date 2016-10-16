@@ -7,7 +7,7 @@
 	<DatabaseSettings>
 		<Driver>SQL Server</Driver>
 		<Server>10.0.4.26</Server>
-		<Database>BIS2Data</Database>
+		<Database>CRMDemo</Database>
 		<User>BIS2User</User>
 		<Password>3Bx?zPaae</Password>
 	</DatabaseSettings>

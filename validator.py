@@ -13,6 +13,7 @@ from datetime import datetime
 from log import Log
 import webbrowser
 import time
+import socket
 
 class ValidationMain(tkinter.Tk):
 
@@ -526,14 +527,33 @@ class Settings(tkinter.Frame):
         Settings.endingjointext = tkinter.Text(self, height=1, width=35)
         Settings.endingjointext.grid(row=5, column=2, padx=2)
 
+        # Testing Stuff
+        Settings.urlstring = tkinter.StringVar()
+        Settings.dbstring = tkinter.StringVar()
+
+        testurlbutton = tkinter.Button(self, text='Test Connection', command=lambda: self.testurl())
+        testurlbutton.grid(column=0, row=12, pady=15)
+
+        testurllabel = tkinter.Label(self, relief='groove', width=25, textvariable=Settings.urlstring)
+        testurllabel.grid(column=0, row=13)
+
+        testdbbutton = tkinter.Button(self, text='Test Connection', command=lambda: self.testdb())
+        testdbbutton.grid(column=1, row=12, pady=15)
+
+        testdblabel = tkinter.Label(self, relief='groove', width=25, textvariable=Settings.dbstring)
+        testdblabel.grid(column=1, row=13)
+
         # Other Stuff
         applybutton = tkinter.Button(self, text='Apply', command=lambda: self.applysettings(controller))
-        applybutton.grid(row=12, column=2, sticky='s', pady=10)
+        applybutton.grid(row=14, column=2, sticky='s', pady=10)
 
         cancelbutton = tkinter.Button(self, text='Cancel', command=lambda: controller.show_frame(StartPage))
-        cancelbutton.grid(row=13, column=2, sticky='s', pady=10)
+        cancelbutton.grid(row=15, column=2, sticky='s', pady=10)
 
     def applysettings(self, controller):
+
+        Settings.urlstring.set('')
+        Settings.dbstring.set('')
 
         url = Settings.urltext.get(1.0, tkinter.END)
         urluser = Settings.urlusertext.get(1.0, tkinter.END)
@@ -572,6 +592,24 @@ class Settings(tkinter.Frame):
         root.write('config.xml')
 
         controller.show_frame(StartPage)
+
+    def testurl(self):
+        testvar = ''
+        try:
+            REST.getcookie(REST)
+            REST.authentify(REST)
+            REST.getUser(REST)
+            testvar = REST.list("admin/admin.jsp")
+            Settings.urlstring.set('Connection successful')
+        except socket.gaierror:
+            Settings.urlstring.set('Connection unsuccessful')
+
+    def testdb(self):
+        try:
+            database.Query.runquery(database, 'SELECT 1 AS Test')
+            Settings.dbstring.set('Connection successful')
+        except UnboundLocalError:
+            Settings.dbstring.set('Connection unsuccessful')
 
 
 class RunFrame(tkinter.Frame):
@@ -663,7 +701,7 @@ class RunFrame(tkinter.Frame):
         RunFrame.progresslabel2.update()
         time.sleep(2)
 
-        workbook = xlsxwriter.Workbook('AutoDV' + str(time.localtime()) + '.xlsx')
+        workbook = xlsxwriter.Workbook('AutoDV' + str(time.gmtime()) + '.xlsx')
 
         for i in variables.valdocs:
             Log.writetolog(Log, 'Attempting to create the excel sheet for ' + str(variables.docnames[i]))
