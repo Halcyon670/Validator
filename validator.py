@@ -12,7 +12,7 @@ import xlsxwriter
 from datetime import datetime
 from log import Log
 import webbrowser
-
+import time
 
 class ValidationMain(tkinter.Tk):
 
@@ -581,22 +581,41 @@ class RunFrame(tkinter.Frame):
         tkinter.Frame.__init__(self, parent)
         controller.minsize(width=1100, height=700)
 
+        # These room labels are to help with the gridding. They are not visible.-----------------------------------------------
+        roomlabel1=tkinter.Label(self, width=30, height=18)
+        roomlabel1.grid(row=0, column=0)
+
+        roomlabel2=tkinter.Label(self, width=10, height=3)
+        roomlabel2.grid(row=1, column=0)
+
+        roomlabel3=tkinter.Label(self, width=10, height=3)
+        roomlabel3.grid(row=2, column=0)
+
+        roomlabel4=tkinter.Label(self, width=10, height=3)
+        roomlabel4.grid(row=3, column=0)
+
+        roomlabel5=tkinter.Label(self, width=10, height=10)
+        roomlabel5.grid(row=4, column=0)
+        # ----------------------------------------------------------------------------------------------------------------------
+
         RunFrame.progress1 = tkinter.StringVar()
         RunFrame.progress2 = tkinter.StringVar()
 
-        RunFrame.progresslabel1 = tkinter.Label(self, textvariable=RunFrame.progress1)
-        RunFrame.progresslabel1.grid(row=0, column=0)
+        RunFrame.progresslabel1 = tkinter.Label(self, width=100, textvariable=RunFrame.progress1, relief='groove')
+        RunFrame.progresslabel1.grid(row=1, column=1)
 
-        RunFrame.progresslabel2 = tkinter.Label(self, textvariable=RunFrame.progress2)
-        RunFrame.progresslabel2.grid(row=1, column=0)
+        RunFrame.runbutton = tkinter.Button(self, text='Run', command=lambda: self.run(variables.removeddocs))
+        RunFrame.runbutton.grid(row=2, column=1, ipadx=10, ipady=10)
 
-        runbutton = tkinter.Button(self, text='Run', command=lambda: self.run(variables.removeddocs))
-        runbutton.grid(row=2, column=0)
+        RunFrame.progresslabel2 = tkinter.Label(self, width=100, textvariable=RunFrame.progress2, relief='groove')
+        RunFrame.progresslabel2.grid(row=3, column=1)
 
     def run(self, removeddocs):
         docresults = {}
         temp = ''
 
+        # Remove the Run button-----------------------------
+        RunFrame.runbutton.grid_forget()
         # Get the URL --------------------------------------
         file = open('config.xml', 'r')
         config = ''
@@ -610,7 +629,7 @@ class RunFrame(tkinter.Frame):
         # --------------------------------------------------
 
         for i in variables.valdocs:
-            RunFrame.progress1.set('Now working on ' + str(i))
+            RunFrame.progress1.set('Now working on ' + str(variables.docnames[i]))
             RunFrame.progress2.set('Attempting to run in the database...')
             RunFrame.progresslabel1.update()
             RunFrame.progresslabel2.update()
@@ -622,6 +641,7 @@ class RunFrame(tkinter.Frame):
                 Log.writetolog(Log, 'Query successfully run. Here are the results:\n\t' + str(temp))
                 RunFrame.progress2.set('Run Successful.')
                 RunFrame.progresslabel2.update()
+                time.sleep(3)
                 temp = ''
             except pypyodbc.ProgrammingError:
                 variables.errorcount += 1
@@ -630,6 +650,7 @@ class RunFrame(tkinter.Frame):
                 Log.writetolog(Log, 'An error has occurred in this query. Please run the query in SQL Server for more information.')
                 RunFrame.progress2.set('Run Unsuccessful. Please see the log for details.')
                 RunFrame.progresslabel2.update()
+                time.sleep(3)
 
         for i in removeddocs:
             variables.valdocs.remove(i)
@@ -640,16 +661,18 @@ class RunFrame(tkinter.Frame):
         RunFrame.progresslabel1.update()
         RunFrame.progress2.set('')
         RunFrame.progresslabel2.update()
+        time.sleep(2)
 
-        workbook = xlsxwriter.Workbook('DV_20160925.xlsx')
+        workbook = xlsxwriter.Workbook('AutoDV' + str(time.localtime()) + '.xlsx')
 
         for i in variables.valdocs:
-            Log.writetolog(Log, 'Attempting to create the excel sheet for ' + str(i))
+            Log.writetolog(Log, 'Attempting to create the excel sheet for ' + str(variables.docnames[i]))
             RunFrame.progress2.set('Creating doc for ' + str(i))
             RunFrame.progresslabel2.update()
             xlsxsheet.addsheet(xlsxsheet, workbook, variables.docnames[i], host + '/index.html?id=' + str(i), str(variables.docstartdate[i]) + ' - ' + str(variables.docenddate[i]), variables.doclastmodified[i], variables.docaggs[i], docresults[i], [], variables.finalqueries[i])
             webbrowser.open_new_tab(host + '/index.html?id=' + str(i))
             Log.writetolog(Log, 'Excel sheet for ' + str(i) + ' successful.')
+            time.sleep(2)
 
         RunFrame.progress2.set('')
         RunFrame.progresslabel2.update()
@@ -659,7 +682,7 @@ class RunFrame(tkinter.Frame):
             RunFrame.progresslabel1.update()
 
         else:
-            RunFrame.progress1.set('Documents completed with ' + str(variables.errorcount) + 'errors. Please review the log for details.')
+            RunFrame.progress1.set('Documents completed with ' + str(variables.errorcount) + ' error(s). Please review the log for details.')
             RunFrame.progresslabel1.update()
 
 # Run the program
