@@ -1,6 +1,0 @@
-
-2016-10-15 20:48:03.267867: Successfully purged prior log and started a new one.
-2016-10-15 20:48:06.421714: Attempting to connect to the database:
-2016-10-15 20:48:10.710002: Database connection successful.
-2016-10-15 20:50:11.073301: Attempting to connect to the database:
-2016-10-15 20:50:16.117438: Database connection successful.
