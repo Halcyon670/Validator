@@ -147,7 +147,7 @@ class reformat:
         return finalqueries
         # --------------------------------------------------------------------------
 
-    # Find the BIS2_GEO_chairs join, and format the queries based on the predicates 
+    # Find the BIS2_GEO_chairs join, and format the queries based on the predicates
     def standid(self, queries):
         pass
 
