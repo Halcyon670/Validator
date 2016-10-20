@@ -1,3 +1,5 @@
+import xml.etree.ElementTree as ET
+import difflib
 
 class reformat:
 
@@ -149,7 +151,40 @@ class reformat:
 
     # Find the BIS2_GEO_chairs join, and format the queries based on the predicates
     def standid(self, queries):
-        pass
+
+        # Find the point of difference between the two queries -----------------------
+        d = difflib.Differ()
+        diff = list(d.compare(queries[0], queries[1]))
+
+        temp = ''
+        newdiff = []
+        plusflag = False
+
+        for i in diff:
+            if i[0] == '+' and plusflag is False:
+                plusflag = True
+                temp += i[2]
+            elif i[0] == '+' and plusflag is True:
+                temp += i[2]
+            elif i[0] in [' ', '-'] and plusflag is True:
+                newdiff.append(temp)
+                temp = ''
+                plusflag = False
+            else:
+                pass
+        # ------------------------------------------------------------------------------
+
+        # Identify which difference is the one we want ---------------------------------
+        join = ''
+
+        for i in newdiff:
+            if 'JOIN' in i and 'ON' in i:
+                join = i
+        # ------------------------------------------------------------------------------
+
+        # Identify the tables we seek --------------------------------------------------
+        table1 = ''
+        table2 = ''
 
     # Combine the queries to the final format
     def combinequeries(self, queries):
