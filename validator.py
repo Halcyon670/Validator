@@ -14,6 +14,7 @@ from log import Log
 import webbrowser
 import time
 import socket
+import http.client
 
 class ValidationMain(tkinter.Tk):
 
@@ -665,7 +666,6 @@ class RunFrame(tkinter.Frame):
 
         host = root.find('./URLSettings/URL').text
         # --------------------------------------------------
-
         for i in variables.valdocs:
             RunFrame.progress1.set('Now working on ' + str(variables.docnames[i]))
             RunFrame.progress2.set('Attempting to run in the database...')
@@ -704,10 +704,21 @@ class RunFrame(tkinter.Frame):
         workbook = xlsxwriter.Workbook('AutoDV' + str(time.gmtime()) + '.xlsx')
 
         for i in variables.valdocs:
+            try:
+                REST.getcookie(REST)
+                REST.getUser(REST)
+                REST.authentify(REST)
+                image = REST.listalt("DeepZoomImages/" + str(i) + "_files/" + str(i) + ".png")
+                if '404 Not Found' in image:
+                    image = ''
+                print(str(image))
+            except http.client.CannotSendRequest:
+                image = open('puppy.png')
+
             Log.writetolog(Log, 'Attempting to create the excel sheet for ' + str(variables.docnames[i]))
             RunFrame.progress2.set('Creating doc for ' + str(i))
             RunFrame.progresslabel2.update()
-            xlsxsheet.addsheet(xlsxsheet, workbook, variables.docnames[i], host + '/index.html?id=' + str(i), str(variables.docstartdate[i]) + ' - ' + str(variables.docenddate[i]), variables.doclastmodified[i], variables.docaggs[i], docresults[i], [], variables.finalqueries[i])
+            xlsxsheet.addsheet(xlsxsheet, workbook, variables.docnames[i], host + '/index.html?id=' + str(i), str(variables.docstartdate[i]) + ' - ' + str(variables.docenddate[i]), variables.doclastmodified[i], variables.docaggs[i], docresults[i], [], variables.finalqueries[i], image)
             webbrowser.open_new_tab(host + '/index.html?id=' + str(i))
             Log.writetolog(Log, 'Excel sheet for ' + str(i) + ' successful.')
             time.sleep(2)

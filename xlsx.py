@@ -7,7 +7,7 @@ class xlsxsheet:
 
     xlsxcount = 0
 
-    def addsheet(self, workbook, name, url, daterange, lastmodified, metricnames, steps, datagrid, sql):
+    def addsheet(self, workbook, name, url, daterange, lastmodified, metricnames, steps, datagrid, sql, image):
 
         xlsxsheet.xlsxcount += 1
 
@@ -95,3 +95,5 @@ class xlsxsheet:
         n += 2
 
         worksheet.insert_textbox(n, 0, sqlparse.format(sql, reindent=True, keyword_case='upper'), textboxoption)
+
+        worksheet.insert_image(1, 10, image)

@@ -54,3 +54,13 @@ class REST:
         conn.close()
         # print(data)
         return data
+
+    def listalt(value):
+        conn = http.client.HTTPConnection(REST.host)
+        conn.request("GET", "/" + value, "", REST.headers)
+        # print(conn.request("GET", "/" + value, "", REST.headers))
+        response = conn.getresponse()
+        data = response.read()
+        conn.close()
+        # print(data)
+        return data
