@@ -55,9 +55,6 @@ class xlsxsheet:
             n += 1
             m = 0
 
-        for i in range(width - 1):
-            datagrid.append('')
-
         worksheet.write(n, m, 'Datagrid', datagridformat)
         m += 1
         for i in datagrid:
@@ -96,4 +93,4 @@ class xlsxsheet:
 
         worksheet.insert_textbox(n, 0, sqlparse.format(sql, reindent=True, keyword_case='upper'), textboxoption)
 
-        worksheet.insert_image(1, 10, image)
+        worksheet.insert_image(1, width + 3, image)

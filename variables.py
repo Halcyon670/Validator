@@ -14,6 +14,7 @@ docaggs = {}
 valdocs = []
 datasetids = {}
 docjson = {}
+newdocjson = {}
 docqueries = {}
 finalqueries = {}
 removeddocs = []

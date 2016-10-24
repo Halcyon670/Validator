@@ -288,6 +288,7 @@ class DocList(tkinter.Frame):
             temp = temp[2:]
             temp = temp[:-1]
             tempquery = ''
+            variables.newdocjson[i] = temp.replace('\\\'', '\'')
 
             parsed_json = json.loads(temp.replace('\\\'', '\''))
 
@@ -689,6 +690,14 @@ class RunFrame(tkinter.Frame):
                 RunFrame.progress2.set('Run Unsuccessful. Please see the log for details.')
                 RunFrame.progresslabel2.update()
                 time.sleep(3)
+            except pypyodbc.DatabaseError:
+                variables.errorcount += 1
+                variables.errordocs.append(i)
+                removeddocs.append(i)
+                Log.writetolog(Log, 'Connection unsuccessful. Skipping document. Please run the query in SQL Server for more information')
+                RunFrame.progress2.set('Run unsuccessful. Please see the log for details.')
+                RunFrame.progresslabel2.update()
+                time.sleep(3)
 
         for i in removeddocs:
             variables.valdocs.remove(i)
@@ -703,7 +712,10 @@ class RunFrame(tkinter.Frame):
 
         workbook = xlsxwriter.Workbook('AutoDV' + str(time.gmtime()) + '.xlsx')
 
+        # Attempt to create the XLSX docs
         for i in variables.valdocs:
+
+            # Attempt to grab and attach the image
             try:
                 REST.getcookie(REST)
                 REST.getUser(REST)
@@ -711,14 +723,32 @@ class RunFrame(tkinter.Frame):
                 image = REST.listalt("DeepZoomImages/" + str(i) + "_files/" + str(i) + ".png")
                 if '404 Not Found' in image:
                     image = ''
-                print(str(image))
             except http.client.CannotSendRequest:
-                image = open('puppy.png')
+                image = 'puppy.png'
+            except TypeError:
+                image = 'puppy.png'
+
+            # Attempt to grab and attach the datasets
+            dataset = []
+
+            parsed_json = json.loads(variables.newdocjson[i])
+            for j in variables.docaggs[i]:
+                for k in parsed_json['DataSet']['Columns']:
+                    if k['Name'] == j:
+                        if k['SummaryType'] == 'Sum':
+                            dataset.append(k['sum'])
+                        elif k['SummaryType'] == 'Count':
+                            dataset.append(k['count'])
+                        elif k['SummaryType'] == 'Average':
+                            dataset.append(k['avg'])
+                        else:
+                            dataset.append('')
+                        break
 
             Log.writetolog(Log, 'Attempting to create the excel sheet for ' + str(variables.docnames[i]))
             RunFrame.progress2.set('Creating doc for ' + str(i))
             RunFrame.progresslabel2.update()
-            xlsxsheet.addsheet(xlsxsheet, workbook, variables.docnames[i], host + '/index.html?id=' + str(i), str(variables.docstartdate[i]) + ' - ' + str(variables.docenddate[i]), variables.doclastmodified[i], variables.docaggs[i], docresults[i], [], variables.finalqueries[i], image)
+            xlsxsheet.addsheet(xlsxsheet, workbook, variables.docnames[i], host + '/index.html?id=' + str(i), str(variables.docstartdate[i]) + ' - ' + str(variables.docenddate[i]), variables.doclastmodified[i], variables.docaggs[i], docresults[i], dataset, variables.finalqueries[i], image)
             webbrowser.open_new_tab(host + '/index.html?id=' + str(i))
             Log.writetolog(Log, 'Excel sheet for ' + str(i) + ' successful.')
             time.sleep(2)
