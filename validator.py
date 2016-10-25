@@ -15,6 +15,7 @@ import webbrowser
 import time
 import socket
 import http.client
+import os.path
 
 class ValidationMain(tkinter.Tk):
 
@@ -181,6 +182,7 @@ class DocList(tkinter.Frame):
             variables.doclastmodified[i.find('./ID').text] = datetime.strptime(i.find('./LastModified').text[:-3], '%Y%m%d%H%M%S')
             variables.docstartdate[i.find('./ID').text] = datetime.strptime(i.find('./StartDate').text[:-3], '%Y%m%d%H%M%S')
             variables.docenddate[i.find('./ID').text] = datetime.strptime(i.find('./EndDate').text[:-3], '%Y%m%d%H%M%S')
+            variables.docimages[i.find('./ID').text] = i.find('./Image').text
             tempdesc = i.find('./Description').text
             if tempdesc is None:
                 variables.docdescription[i.find('./ID').text] = ''
@@ -720,13 +722,18 @@ class RunFrame(tkinter.Frame):
                 REST.getcookie(REST)
                 REST.getUser(REST)
                 REST.authentify(REST)
-                image = REST.listalt("DeepZoomImages/" + str(i) + "_files/" + str(i) + ".png")
-                if '404 Not Found' in image:
-                    image = ''
+                REST.listalt("DeepZoomImages/" + str(variables.docimages[i]) + "_files/" + str(variables.docimages[i]) + ".png", str(variables.docimages[i]))
             except http.client.CannotSendRequest:
-                image = 'puppy.png'
+                pass
             except TypeError:
-                image = 'puppy.png'
+                pass
+            except ValueError:
+                pass
+
+            if os.path.isfile(str(variables.docimages[i]) + '.png'):
+                image = str(variables.docimages[i]) + '.png'
+            else:
+                image = ''
 
             # Attempt to grab and attach the datasets
             dataset = []

@@ -9,6 +9,7 @@ docenddate = {}
 docdescription = {}
 doctag = {}
 docaggs = {}
+docimages = {}
 
 # Variables over local list of docs:
 valdocs = []
