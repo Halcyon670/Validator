@@ -91,6 +91,8 @@ class xlsxsheet:
 
         n += 2
 
+
         worksheet.insert_textbox(n, 0, sqlparse.format(sql, reindent=True, keyword_case='upper'), textboxoption)
 
-        worksheet.insert_image(1, width + 3, image)
+        if image != '':
+            worksheet.insert_image(1, width + 3, image)

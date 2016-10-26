@@ -263,6 +263,7 @@ class DocList(tkinter.Frame):
 
         DocList.moveint = 0
 
+    # Takes and for
     def validate(self, controller):
 
         REST.getcookie(REST)
@@ -277,6 +278,7 @@ class DocList(tkinter.Frame):
 
         root = ET.fromstring(doclist)
 
+        # Pull the doc information from both the XML and from the dataset JSON -------------------------------
         docsraw = root.findall('./VisualDocInfo')
         for i in docsraw:
             variables.datasetids[i.find('./ID').text] = i.find('./DataSetID').text
@@ -290,16 +292,34 @@ class DocList(tkinter.Frame):
             temp = temp[2:]
             temp = temp[:-1]
             tempquery = ''
-            variables.newdocjson[i] = temp.replace('\\\'', '\'')
-
-            parsed_json = json.loads(temp.replace('\\\'', '\''))
-
-            tempquery = Other.removedash(Other, parsed_json['DataSet']['QueryPlan'])
-            tempquery = Other.removedash(Other, tempquery)
+            try:
+                variables.newdocjson[i] = temp.replace('\\\'', '\'')
+                parsed_json = json.loads(temp.replace('\\\'', '\''))
+                tempquery = Other.removedash(Other, parsed_json['DataSet']['QueryPlan'])
+                tempquery = Other.removedash(Other, tempquery)
+            except ValueError:
+                pass
 
             variables.docqueries[i] = tempquery
 
-        # Confirmation.valdocs = variables.valdocs
+        # ------------------------------------------------------------------------------------------------------
+        # Check for any documents that are missing queries, and remove them ------------------------------------
+        j = 0
+        while j < 50:
+            for i in variables.valdocs:
+                if variables.docqueries[i] == '':
+                    Log.writetolog(Log, 'Removing ' + str(i) + '. This was an invalid document.')
+                    del variables.docqueries[i]
+                    del variables.datasetids[i]
+                    del variables.docjson[i]
+                    variables.valdocs.remove(i)
+                else:
+                    pass
+
+                j += 1
+
+        # ------------------------------------------------------------------------------------------------------
+        # Confirmation.valdocs = variables.valdocs -------------------------------------------------------------
         for i in variables.valdocs:
             Confirmation.valdocs.append(i)
         Confirmation.docqueries = variables.docqueries
@@ -310,6 +330,7 @@ class DocList(tkinter.Frame):
         Confirmation.populate(Confirmation, Confirmation.valdocs, Confirmation.docqueries, controller)
 
         controller.show_frame(Confirmation)
+        # ------------------------------------------------------------------------------------------------------
 
 
 class Confirmation(tkinter.Frame):
@@ -717,7 +738,7 @@ class RunFrame(tkinter.Frame):
         # Attempt to create the XLSX docs
         for i in variables.valdocs:
 
-            # Attempt to grab and attach the image
+            # Attempt to grab and attach the image ----------------------------------------------------------------------------------
             try:
                 REST.getcookie(REST)
                 REST.getUser(REST)
@@ -735,7 +756,9 @@ class RunFrame(tkinter.Frame):
             else:
                 image = ''
 
-            # Attempt to grab and attach the datasets
+            # -----------------------------------------------------------------------------------------------------------------------
+            # Attempt to grab and attach the datasets -------------------------------------------------------------------------------
+
             dataset = []
 
             parsed_json = json.loads(variables.newdocjson[i])
@@ -751,6 +774,8 @@ class RunFrame(tkinter.Frame):
                         else:
                             dataset.append('')
                         break
+
+            # ------------------------------------------------------------------------------------------------------------------------
 
             Log.writetolog(Log, 'Attempting to create the excel sheet for ' + str(variables.docnames[i]))
             RunFrame.progress2.set('Creating doc for ' + str(i))

@@ -2,6 +2,7 @@ import http.cookiejar
 import http.client
 from urllib import parse
 from urllib import request
+from urllib import error
 import xml.etree.ElementTree as ET
 
 class REST:
@@ -58,8 +59,11 @@ class REST:
 
     def listalt(value, image):
         conn = http.client.HTTPConnection(REST.host)
-        conn.request("GET", "/" + value, "", REST.headers)
-        request.urlretrieve('http://' + REST.host + "/" + value, image + '.png')
+        try:
+            conn.request("GET", "/" + value, "", REST.headers)
+            request.urlretrieve('http://' + REST.host + "/" + value, image + '.png')
+        except error.HTTPError:
+            pass
         # print(conn.request("GET", "/" + value, "", REST.headers))
         response = conn.getresponse()
         data = response.read()
