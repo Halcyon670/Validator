@@ -64,6 +64,7 @@ class Formatting:
 
         return list
 
+    # Runs a check on any where predicate to see if it contains more than one table
     def multitablewherecheck(self, joinorder, whereelement):
         flag = 0
 
@@ -119,9 +120,11 @@ class SectionStrip:
 
     def stripaggs(self, sql):
 
+        # Retrieve the SELECTs ------------------------------------------------------------------------------------------------------------
         sql = SectionStrip.stripouterquery(SectionStrip, sql)
         selectqueries = Formatting.keywordsearch(Formatting, ['SELECT', 'FROM'], sql)
-
+        # ---------------------------------------------------------------------------------------------------------------------------------
+        # Find the main SELECT by isolating the main FROM clause --------------------------------------------------------------------------
         selectfrom = 100001
         for i in selectqueries:
             if selectqueries[i] == 'FROM':
@@ -129,8 +132,8 @@ class SectionStrip:
                     selectfrom = i
 
         subselect = sql[:selectfrom - 1]
-
-        aggpos = Formatting.keywordsearch(Formatting, ['SUM', 'COUNT'], subselect)
+        # ---------------------------------------------------------------------------------------------------------------------------------
+        aggpos = Formatting.keywordsearch(Formatting, ['SUM', 'COUNT', 'AVG'], subselect)
         aggposordered = Formatting.dictorder(Formatting, aggpos)
         aggfinal = []
         pos = 0
@@ -144,8 +147,14 @@ class SectionStrip:
 
             parencount = 0
 
+            # Kind of an awkward way to create an exception for CASE statements ----------------------------------------------------------
+            try:
+                if subselect[i - 1] == ' ' and subselect[i - 2] == 'N' and subselect[i - 3] == 'E' and subselect[i - 4] == 'H' and subselect[i - 5] == 'W' and subselect[i - 6] == ' ' and subselect[i - 7] == 'E' and subselect[i - 8] == 'S' and subselect[i - 9] == 'A' and subselect[i - 10] == 'C':
+                    pos -= 10
+            except IndexError:
+                pass
+            # ----------------------------------------------------------------------------------------------------------------------------
             while True:
-
 
                 if pos >= len(subselect):
                     break
@@ -183,15 +192,19 @@ class SectionStrip:
             else:
                 continue
 
-            # Add an exception for RIGHT and LEFT string modifiers
+            # Add an exception for RIGHT and LEFT string modifiers -------------------------------------------------------------------------------------------------------------------------------
             if sql[pos] + sql[pos + 1] + sql[pos + 2] + sql[pos + 3] + sql[pos + 4] + sql[pos + 5] == 'RIGHT(' or sql[pos] + sql[pos + 1] + sql[pos + 2] + sql[pos + 3] + sql[pos + 4] == 'LEFT(':
                 continue
-
+            # ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+            # Cycle through the words one at a time and pull out the individual joins ------------------------------------------------------------------------------------------------------------
             while True:
                 temp = ''
 
                 while True:
-                    if sql[pos + j] == ' ':
+                    if pos + j >= len(sql):
+                        tempfull += temp
+                        break
+                    elif sql[pos + j] == ' ':
                         temp += sql[pos + j]
                         j += 1
                         break
@@ -203,7 +216,7 @@ class SectionStrip:
                     temp += sql[pos + j]
                     j += 1
 
-                if temp in ['INNER ', 'LEFT ', 'RIGHT ', 'FULL ', 'JOIN ', 'WHERE ', 'GROUP '] and parencount == 0 and len(tempfull) > 15: # Not quite happy with this length check. Probably need to fix this up a bit.
+                if (temp in ['INNER ', 'LEFT ', 'RIGHT ', 'FULL ', 'JOIN ', 'WHERE ', 'GROUP '] and parencount == 0 and len(tempfull) > 15) or pos + j >= len(sql): # Not quite happy with this length check. Probably need to fix this up a bit.
                     j = 0
                     break
 
@@ -213,7 +226,7 @@ class SectionStrip:
                     j = 0
 
             joinfinal.append(tempfull)
-
+            # -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
         return joinfinal
 
     def stripwhere(self, sql):
@@ -604,13 +617,13 @@ class Reconstruction:
                     for i in wherelist:
 
                         # Check if there is more than one table in the predicate. If so, check whether more than one element is already present in joinprog. If so, append.
-                        if Formatting.multitablewherecheck(Formatting, joinorder, i) and i not in restrict == True:
-                            if Formatting.singlemultiwhereelementcheck(Formatting, joinprog[joinpos], i, joinprog) == True:
+                        if Formatting.multitablewherecheck(Formatting, joinorder, i) is True and i not in restrict:
+                            if Formatting.singlemultiwhereelementcheck(Formatting, joinprog[joinpos], i, joinprog) is True:
                                 whereprog.append(i)
                                 wherelist.remove(i)
 
                         # Check that there is only one table, and if there is only one, check whether its table is already in joinprog. If so, append.
-                        elif Formatting.singletablewherecheck(Formatting, joinprog[joinpos], i) == True and Formatting.multitablewherecheck(Formatting, joinorder, i) == False and i not in restrict:
+                        elif Formatting.singletablewherecheck(Formatting, joinprog[joinpos], i) is True and Formatting.multitablewherecheck(Formatting, joinorder, i) is False and i not in restrict:
                             whereprog.append(i)
                             wherelist.remove(i)
 
