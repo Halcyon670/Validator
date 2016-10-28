@@ -301,7 +301,6 @@ class DocList(tkinter.Frame):
                 pass
 
             variables.docqueries[i] = tempquery
-
         # ------------------------------------------------------------------------------------------------------
         # Check for any documents that are missing queries, and remove them ------------------------------------
         j = 0
@@ -317,7 +316,6 @@ class DocList(tkinter.Frame):
                     pass
 
                 j += 1
-
         # ------------------------------------------------------------------------------------------------------
         # Confirmation.valdocs = variables.valdocs -------------------------------------------------------------
         for i in variables.valdocs:
@@ -396,7 +394,7 @@ class Confirmation(tkinter.Frame):
             Confirmation.docwhere = reformat.Isolation.wherelist(reformat, docqueries[valdocs[0]])
             Confirmation.docwhereand = reformat.Isolation.whereand(reformat, docqueries[valdocs[0]])
 
-            # Move the specified joins to their proper places
+            # Move the specified joins to their proper places -----------------------------------------------------------------------------
             root=ET.parse('config.xml')
             startjoins = root.find('./AdvancedSettings/StartingJoins').text
             endjoins = root.find('./AdvancedSettings/EndingJoins').text
@@ -429,7 +427,7 @@ class Confirmation(tkinter.Frame):
 
                 elif i in startjoinlist:
                     Confirmation.docjoins.insert(1, Confirmation.docjoins.pop(Confirmation.docjoins.index(i)))
-
+            # ------------------------------------------------------------------------------------------------------------------------------
             Log.writetolog(Log, 'Checking ' + str(valdocs[0]) + ' (' + str(variables.docnames[valdocs[0]]) + '):' + '\n\tQuery: ' + str(variables.docqueries[valdocs[0]]) + '\n\tDocAggs: ' + str(Confirmation.docaggs) + '\n\tDocAggDict: ' + str(Confirmation.docaggdict) + '\n\tDocJoins: ' + str(Confirmation.docjoins) + '\n\tDocJoinDict: ' + str(Confirmation.docjoindict) + '\n\tDocWhere: ' + str(Confirmation.docwhere) + '\n\tDocWhereAnd: ' + str(Confirmation.docwhereand))
 
             for i in Confirmation.docaggs:
@@ -727,13 +725,13 @@ class RunFrame(tkinter.Frame):
 
         Log.writetolog(Log, 'Queries completed with ' + str(variables.errorcount) + ' errors.\n\tErrored documents are: ' + str(variables.errordocs) + '.')
 
-        RunFrame.progress1.set('Queries finished. Now setting up xlsx docs...')
+        RunFrame.progress1.set('Queries finished. Now setting up xlsx sheets...')
         RunFrame.progresslabel1.update()
         RunFrame.progress2.set('')
         RunFrame.progresslabel2.update()
         time.sleep(2)
 
-        workbook = xlsxwriter.Workbook('AutoDV' + str(time.gmtime()) + '.xlsx')
+        workbook = xlsxwriter.Workbook('AutoDV' + str(datetime.now().strftime('%Y%m%d%H%M%S')) + '.xlsx')
 
         # Attempt to create the XLSX docs
         for i in variables.valdocs:
@@ -778,12 +776,14 @@ class RunFrame(tkinter.Frame):
             # ------------------------------------------------------------------------------------------------------------------------
 
             Log.writetolog(Log, 'Attempting to create the excel sheet for ' + str(variables.docnames[i]))
-            RunFrame.progress2.set('Creating doc for ' + str(i))
+            RunFrame.progress2.set('Creating sheet for ' + str(variables.docnames[i]))
             RunFrame.progresslabel2.update()
             xlsxsheet.addsheet(xlsxsheet, workbook, variables.docnames[i], host + '/index.html?id=' + str(i), str(variables.docstartdate[i]) + ' - ' + str(variables.docenddate[i]), variables.doclastmodified[i], variables.docaggs[i], docresults[i], dataset, variables.finalqueries[i], image)
             webbrowser.open_new_tab(host + '/index.html?id=' + str(i))
             Log.writetolog(Log, 'Excel sheet for ' + str(i) + ' successful.')
             time.sleep(2)
+
+        workbook.close()
 
         RunFrame.progress2.set('')
         RunFrame.progresslabel2.update()

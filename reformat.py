@@ -103,6 +103,7 @@ class Formatting:
 class SectionStrip:
 
     def stripouterquery(self, sql):
+        check = 0
         while True:
 
             selectqueries = Formatting.keywordsearch(Formatting, ['SELECT'], sql)
@@ -116,6 +117,10 @@ class SectionStrip:
             else:
                 break
 
+            if check > 100:
+                break
+
+            check += 1
         return sql
 
     def stripaggs(self, sql):
@@ -294,6 +299,7 @@ class SectionStrip:
         else:
             wherefinal = ''
             return wherefinal
+
 
 class Isolation:
 
