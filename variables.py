@@ -19,6 +19,7 @@ newdocjson = {}
 docqueries = {}
 finalqueries = {}
 removeddocs = []
+geodrops = []
 
 # System variables
 errorcount = 0

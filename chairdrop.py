@@ -4,7 +4,7 @@ import difflib
 class reformat:
 
     # Find, then return, the positions of the last two UNION ALLs
-    def findunions(self, sql):
+    def findunions(self, sql, union1, union2):
         pos = 0
         unions = []
         temp = ''
@@ -22,15 +22,13 @@ class reformat:
                     temp = ''
                     pos += 1
         # ---------------------------------------------------------------------------
-        # Limit to the last two -----------------------------------------------------
-        length = len(unions) - 2
-        i = 0
+        # Limit to specified unions -------------------------------------------------
+        newunions = []
 
-        while i < length:
-            unions.remove(unions[0])
-            i += 1
+        newunions.append(unions[union1])
+        newunions.append(unions[union2])
         # ---------------------------------------------------------------------------
-        return unions
+        return newunions
 
     # Use the list generated in findunions to isolate the last two queries
     def findqueries(self, sql, unions):
@@ -298,6 +296,69 @@ class reformat:
         # --------------------------------------------------------------------------------------
         return preddict
 
+    def changeab(self, queries, preddict):
+        table1 = preddict['B']
+        table2 = preddict['A']
+        table1preds = preddict[table1]
+        table2preds = preddict[table2]
+
+        newqueries = []
+        tempquery = ''
+        temp = ''
+        tempflag = False
+        selectflag = False
+        predflag = False
+        pred = 0
+
+        for i in queries:
+            for j in i:
+                if j not in [' ', '\r', '\n'] and selectflag is False and predflag is False:
+                    temp += j
+                elif j in [' ', '\r', '\n'] and selectflag is False and predflag is False:
+                    tempflag = True
+
+                if temp == 'SELECT' and tempflag is True and selectflag is False and predflag is False:
+                    tempquery += temp
+                    selectflag = True
+                    temp = ''
+                    tempflag = False
+                elif temp != 'SELECT' and tempflag is True and selectflag is False and predflag is False:
+                    tempquery += temp
+                    temp = ''
+                    tempflag = False
+
+                if selectflag is True and predflag is False:
+                    if pred == 0:
+                        for k in table2preds:
+                            tempquery += ' ' + k + ', '
+                            predflag = True
+                    elif pred == 1:
+                        for k in table1preds:
+                            tempquery += ' ' + k + ', '
+                            predflag = True
+
+                if selectflag is True and predflag is True:
+                    tempquery += j
+
+            if pred == 0:
+                tempquery += ' GROUP BY '
+                for k in table2preds:
+                    tempquery += ' ' + k + ', '
+            elif pred == 1:
+                tempquery += ' GROUP BY '
+                for k in table2preds:
+                    tempquery += ' ' + k + ', '
+
+            tempquery = tempquery[:-2:]
+
+            pred += 1
+            predflag = False
+            selectflag = False
+            newqueries.append(tempquery)
+            tempquery = ''
+
+        return newqueries
+
     # Combine the queries to the final format
     def combinequeries(self, queries, preddict):
         finalquery = ''
@@ -307,11 +368,11 @@ class reformat:
         table2preds = preddict[table2]
 
         # Begin the process with the first few lines -------------------------------------------
-        finalquery += 'WITH A AS('
+        finalquery += 'SELECT \'Drops\' AS Info, * FROM ('
         finalquery += queries[0]
-        finalquery += ') , B AS('
+        finalquery += ') AS A LEFT JOIN ('
         finalquery += queries[1]
-        finalquery += ')  SELECT \'Drops\', * FROM A LEFT JOIN B ON '
+        finalquery += ') AS B ON '
         # --------------------------------------------------------------------------------------
         # Add in the join predicates -----------------------------------------------------------
         pred = 0
