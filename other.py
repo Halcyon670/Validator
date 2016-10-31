@@ -44,3 +44,26 @@ class Other:
             temp = datetime.strptime('1970-01-01', '%Y-%m-%d')
 
         return newlist
+
+    # Remove excessive whitespace from queries.
+    # Kind of an awkward fix, but shouldn't have
+    # too big a hit on performance.
+    # Essentially allows proper parsing on already
+    # formatted queries that may have excessive whitespace
+    # as a result of the formatting.
+    def removewhitespace(self, sql):
+        sql = sql.replace('\n', ' ')
+        sql = sql.replace('\r', ' ')
+        sql = sql.replace('            ', ' ')
+        sql = sql.replace('           ', ' ')
+        sql = sql.replace('          ', ' ')
+        sql = sql.replace('         ', ' ')
+        sql = sql.replace('        ', ' ')
+        sql = sql.replace('       ', ' ')
+        sql = sql.replace('      ', ' ')
+        sql = sql.replace('     ', ' ')
+        sql = sql.replace('    ', ' ')
+        sql = sql.replace('   ', ' ')
+        sql = sql.replace('  ', ' ')
+
+        return sql

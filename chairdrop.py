@@ -11,10 +11,10 @@ class reformat:
 
         # Isolate all UNION ALLs------------------------------------------------------
         for i in sql:
-            if i != ' ':
+            if i not in [' ', '\r', '\n']:
                 temp += i
                 pos += 1
-            elif i == ' ':
+            elif i in [' ', '\r', '\n']:
                 if temp == 'UNION' and sql[pos+1] == 'A' and sql[pos+2] == 'L' and sql[pos+3] == 'L':
                     unions.append(pos-5)
                     pos += 1
@@ -22,7 +22,6 @@ class reformat:
                     temp = ''
                     pos += 1
         # ---------------------------------------------------------------------------
-
         # Limit to the last two -----------------------------------------------------
         length = len(unions) - 2
         i = 0
@@ -31,7 +30,6 @@ class reformat:
             unions.remove(unions[0])
             i += 1
         # ---------------------------------------------------------------------------
-
         return unions
 
     # Use the list generated in findunions to isolate the last two queries
@@ -54,9 +52,9 @@ class reformat:
             tempword = ''
 
             for j in i:
-                if j == ' ' and tempword == 'FROM' and parenpos == 0:
+                if j in [' ', '\n', '\r'] and tempword == 'FROM' and parenpos == 0:
                     break
-                elif j == ' ' and tempword != 'FROM':
+                elif j in [' ', '\n', '\r'] and tempword != 'FROM':
                     pos += 1
                     tempword = ''
                 elif j == '(':
@@ -73,7 +71,6 @@ class reformat:
 
             selectqueries.append(i[:pos-5])
         # --------------------------------------------------------------------------------
-
         # Cycle through the SELECT statement, removing Step ------------------------------
         selectqueriesstep = []
 
@@ -109,7 +106,6 @@ class reformat:
 
             selectqueriesstep.append(i.replace(i[firstpos:pos+1], '')[::-1])
         # -----------------------------------------------------------------------------
-
         # Now remove StepInfo: ---------------------------------------------------------
         selectqueriesstepinfo = []
 
@@ -119,7 +115,7 @@ class reformat:
             parenpos = 0
 
             for j in i:
-                if j == '\'' and i[pos+1] == ' ' and i[pos+2] == ',' and parenpos == 0:
+                if j == '\'' and i[pos+1] in [' ', '\n', '\r'] and i[pos+2] == ',' and parenpos == 0:
                     templine += j
                     pos += 1
                     break
@@ -173,7 +169,6 @@ class reformat:
             else:
                 pass
         # ------------------------------------------------------------------------------
-
         # Identify which difference is the one we want ---------------------------------
         join = ''
 
@@ -181,19 +176,167 @@ class reformat:
             if 'JOIN' in i and 'ON' in i:
                 join = i
         # ------------------------------------------------------------------------------
-
         # Identify the tables we seek --------------------------------------------------
         table1 = ''
+        table2temp = ''
+        temp = ''
+        tableflag = False
+        tempflag = False
+        onflag = False
+
+        for i in join:
+            if i not in [' ', '\n', '\r']:
+                temp += i
+            elif i in [' ', '\n', '\r']:
+                tempflag = True
+
+            if tempflag is True and tableflag is not True and onflag is not True and temp == 'JOIN':
+                tableflag = True
+                tempflag = False
+                temp = ''
+
+            if tempflag is True and tableflag is True and onflag is not True:
+                table1 = temp
+                tableflag = False
+                tempflag = False
+                temp = ''
+
+            if tempflag is True and tableflag is False and onflag is not True and temp == 'ON':
+                tempflag = False
+                onflag = True
+                temp = ''
+
+            if tempflag is True and tableflag is False and onflag is True:
+                if len(temp) > 2 and table1 not in temp:
+                    table2temp = temp
+                    tempflag = False
+                    temp = ''
+                else:
+                    tempflag = False
+                    temp = ''
+
+            if tempflag is True and tableflag is not True and onflag is not True and temp not in ['JOIN']:
+                tempflag = False
+                temp = ''
+
+        # ----------------------------------------------------------------------------------
+        # Now clean up table2temp to extract the actual table out of it --------------------
+        table2temp = table2temp[::-1]
         table2 = ''
+        table2flag = False
+
+        for i in table2temp:
+            if i == '.' and table2flag is False:
+                table2flag = True
+            elif table2flag is True:
+                table2 += i
+            else:
+                pass
+
+        table2 = table2[::-1]
+        # -----------------------------------------------------------------------------------
+        # Now grab the join predicates ------------------------------------------------------
+        # I probably could have combined this with the table parsing, but oh, well
+        onflag = False
+        temppred = ''
+        predlist = []
+
+        for i in join:
+            if i not in [' ', '\n', '\r', '(', ')']:
+                temp += i
+            elif i in ['(', ')']:
+                pass
+            elif i in [' ', '\n', '\r']:
+                tempflag = True
+
+            if tempflag is True and onflag is False and temp == 'ON':
+                onflag = True
+                temp = ''
+                tempflag = False
+            elif tempflag is True and onflag is False and temp != 'ON':
+                temp = ''
+                tempflag = False
+
+            if tempflag is True and onflag is True and temp not in ['AND', 'OR', 'NOT']:
+                temppred += temp
+                temp = ''
+                tempflag = False
+            elif tempflag is True and onflag is True and temp in ['AND', 'OR', 'NOT']:
+                predlist.append(temppred)
+                temppred = ''
+                temp = ''
+                tempflag = False
+
+        predlist.append(temppred)
+        # --------------------------------------------------------------------------------
+        # Now associate the predicates with the proper tables ----------------------------
+        preddict = {}
+        tempdict1 = []
+        tempdict2 = []
+        temp = ''
+
+        for i in predlist:
+            for j in i:
+                if j not in ['=', '!=', '<>', '>', '<', '>=', '<=']:
+                    temp += j
+                elif j in ['=', '!=', '<>', '>', '<', '>=', '<=']:
+                    if table1 in temp:
+                        tempdict1.append(temp)
+                    elif table2 in temp:
+                        tempdict2.append(temp)
+                    temp = ''
+            if table1 in temp:
+                tempdict1.append(temp)
+            elif table2 in temp:
+                tempdict2.append(temp)
+            temp = ''
+
+        preddict[table1] = tempdict1
+        preddict[table2] = tempdict2
+        preddict['B'] = table1
+        preddict['A'] = table2
+        # --------------------------------------------------------------------------------------
+        return preddict
 
     # Combine the queries to the final format
-    def combinequeries(self, queries):
+    def combinequeries(self, queries, preddict):
         finalquery = ''
+        table1 = preddict['B']
+        table2 = preddict['A']
+        table1preds = preddict[table1]
+        table2preds = preddict[table2]
 
-        finalquery = 'WITH A AS('
+        # Begin the process with the first few lines -------------------------------------------
+        finalquery += 'WITH A AS('
         finalquery += queries[0]
         finalquery += ') , B AS('
         finalquery += queries[1]
-        finalquery += ')  SELECT \'Drops\', * FROM A LEFT JOIN B ON A.StandID = B.StandID WHERE B.StandID IS NULL UNION ALL SELECT \'Not Equal\', * FROM A FULL OUTER JOIN B ON A.StandID = B.StandID WHERE A.TheoWin <> B.TheoWin AND A.TheoWin IS NOT NULL AND B.TheoWin IS NOT NULL'
+        finalquery += ')  SELECT \'Drops\', * FROM A LEFT JOIN B ON '
+        # --------------------------------------------------------------------------------------
+        # Add in the join predicates -----------------------------------------------------------
+        pred = 0
+
+        while pred < len(table1preds):
+            if pred != 0:
+                finalquery += ' AND '
+
+            finalquery += table2preds[pred].replace(table2, 'A')
+            finalquery += ' = '
+            finalquery += table1preds[pred].replace(table1, 'B')
+
+            pred += 1
+        # --------------------------------------------------------------------------------------
+        # Add in the WHERE clause --------------------------------------------------------------
+        pred = 0
+
+        finalquery += ' WHERE '
+        while pred < len(table1preds):
+            if pred != 0:
+                finalquery += ' AND '
+
+            finalquery += table1preds[pred].replace(table1, 'B')
+            finalquery += ' IS NULL'
+
+            pred += 1
 
         return finalquery
