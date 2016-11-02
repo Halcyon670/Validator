@@ -60,7 +60,7 @@ class StartPage(tkinter.Frame):
         label = tkinter.Label(self, text='Validator\n', font='bold')
         label.grid(column=1, row=0, pady=10, padx=10)
 
-        changelog = tkinter.Label(self, font=('Times New Roman', 12), text='Current Release: v3.0\n\nThis is a complete overhaul of the original validator. The purpose of this one is to connect directly to the database and automate the entire process.\n\nAny issues, ideas, etc. can be sent to cory.clanin@vizexplorer.com', relief='ridge', width=110, height=25)
+        changelog = tkinter.Label(self, font=('Times New Roman', 12), text='Current Release: v3.0\n\nThis is a complete overhaul of the original validator. This version connects to the application and database and builds the appropriate excel sheets.\n\nAny issues, ideas, etc. can be sent to cory.clanin@vizexplorer.com', relief='ridge', width=110, height=25)
         changelog.grid(column=1, row=1, sticky='ew', padx=50)
 
         singleval = tkinter.Button(self, text="Begin!", pady=10, padx=10, fg="black", command=lambda: controller.show_frame(DocList))
@@ -395,7 +395,7 @@ class Confirmation(tkinter.Frame):
             Confirmation.docwhereand = reformat.Isolation.whereand(reformat, docqueries[valdocs[0]])
 
             # Move the specified joins to their proper places -----------------------------------------------------------------------------
-            root=ET.parse('config.xml')
+            root = ET.parse('config.xml')
             startjoins = root.find('./AdvancedSettings/StartingJoins').text
             endjoins = root.find('./AdvancedSettings/EndingJoins').text
             startjoinlist = []
@@ -538,13 +538,13 @@ class Settings(tkinter.Frame):
         advancedsettingslabel = tkinter.Label(self, text='Advanced Settings:\n')
         advancedsettingslabel.grid(row=1, column=2, padx=20)
 
-        startingjoinlabel = tkinter.Label(self, text='Starting Joins:')
+        startingjoinlabel = tkinter.Label(self, text='Starting Joins (3-part name, case-sensitive):')
         startingjoinlabel.grid(row=2, column=2, sticky='w', padx=20)
 
         Settings.startingjointext = tkinter.Text(self, height=1, width=35)
         Settings.startingjointext.grid(row=3, column=2, padx=20)
 
-        endingjoinlabel = tkinter.Label(self, text='Ending Joins:')
+        endingjoinlabel = tkinter.Label(self, text='Ending Joins (3-part name, case-sensitive):')
         endingjoinlabel.grid(row=4, column=2, sticky='w', padx=20)
 
         Settings.endingjointext = tkinter.Text(self, height=1, width=35)
@@ -643,19 +643,19 @@ class RunFrame(tkinter.Frame):
         controller.minsize(width=1100, height=700)
 
         # These room labels are to help with the gridding. They are not visible.-----------------------------------------------
-        roomlabel1=tkinter.Label(self, width=30, height=18)
+        roomlabel1 = tkinter.Label(self, width=30, height=18)
         roomlabel1.grid(row=0, column=0)
 
-        roomlabel2=tkinter.Label(self, width=10, height=3)
+        roomlabel2 = tkinter.Label(self, width=10, height=3)
         roomlabel2.grid(row=1, column=0)
 
-        roomlabel3=tkinter.Label(self, width=10, height=3)
+        roomlabel3 = tkinter.Label(self, width=10, height=3)
         roomlabel3.grid(row=2, column=0)
 
-        roomlabel4=tkinter.Label(self, width=10, height=3)
+        roomlabel4 = tkinter.Label(self, width=10, height=3)
         roomlabel4.grid(row=3, column=0)
 
-        roomlabel5=tkinter.Label(self, width=10, height=10)
+        roomlabel5 = tkinter.Label(self, width=10, height=10)
         roomlabel5.grid(row=4, column=0)
         # ----------------------------------------------------------------------------------------------------------------------
 
