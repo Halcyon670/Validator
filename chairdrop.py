@@ -25,8 +25,8 @@ class reformat:
         # Limit to specified unions -------------------------------------------------
         newunions = []
 
-        newunions.append(unions[union1])
-        newunions.append(unions[union2])
+        newunions.append(unions[union1-1])
+        newunions.append(unions[union2-1])
         # ---------------------------------------------------------------------------
         return newunions
 
@@ -401,3 +401,43 @@ class reformat:
             pred += 1
 
         return finalquery
+
+
+class DropCheck:
+
+    def checkfordrop(self, results):
+
+        # Reassign to a list format for easier comparison --------------------------------------------
+        tempsteps = []
+        temp = []
+        length = 0
+
+        for i in results:
+            length = 0
+            for j in i:
+                temp.append(j)
+                length += 1
+            tempsteps.append(temp)
+            temp = []
+        # --------------------------------------------------------------------------------------------
+        # Now compare the individual steps and find which ones have drops ----------------------------
+        drops = []
+        curstep = 0
+        curmetric = 1
+
+        while True:
+            if curstep + 1 >= len(tempsteps):
+                break
+
+            if tempsteps[curstep][curmetric] - tempsteps[curstep+1][curmetric] > 10.0 and 'Restriction' not in tempsteps[curstep+1][length-1]:
+                drops.append([curstep, curstep+1])
+                curstep += 1
+                curmetric = 1
+            elif curmetric < length - 2:
+                curmetric += 1
+            else:
+                curmetric = 1
+                curstep += 1
+
+        # --------------------------------------------------------------------------------------------
+        return drops

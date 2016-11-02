@@ -16,6 +16,7 @@ import time
 import socket
 import http.client
 import os.path
+import chairdrop
 
 class ValidationMain(tkinter.Tk):
 
@@ -688,6 +689,7 @@ class RunFrame(tkinter.Frame):
 
         host = root.find('./URLSettings/URL').text
         # --------------------------------------------------
+        # Run the queries in the database, and take note of any errors --------------------------------------
         for i in variables.valdocs:
             RunFrame.progress1.set('Now working on ' + str(variables.docnames[i]))
             RunFrame.progress2.set('Attempting to run in the database...')
@@ -699,6 +701,10 @@ class RunFrame(tkinter.Frame):
                 temp = database.Query.runquery(Confirmation, variables.finalqueries[i])
                 docresults[i] = temp
                 Log.writetolog(Log, 'Query successfully run. Here are the results:\n\t' + str(temp))
+                drop = chairdrop.DropCheck.checkfordrop(chairdrop, temp)
+                if len(drop) > 0:
+                    Log.writetolog(Log, 'Drops detected: ' + str(drop))
+                    variables.drops[i] = drop
                 RunFrame.progress2.set('Run Successful.')
                 RunFrame.progresslabel2.update()
                 time.sleep(3)
@@ -720,10 +726,42 @@ class RunFrame(tkinter.Frame):
                 RunFrame.progresslabel2.update()
                 time.sleep(3)
 
+            # Run drop investigations ----------------------------------------------------------------------------------------------------
+            RunFrame.progress2.set('Drop(s) detected. Investigating...')
+            if i in variables.drops:
+                for j in variables.drops[i]:
+                    sql = Other.removewhitespace(Other, variables.finalqueries[i])
+                    unions = chairdrop.reformat.findunions(chairdrop, sql, j[0], j[1])
+                    queries = chairdrop.reformat.findqueries(chairdrop, sql, unions)
+                    newqueries = chairdrop.reformat.removestep(chairdrop, queries)
+                    preddict = chairdrop.reformat.standid(chairdrop, newqueries)
+                    newerqueries = chairdrop.reformat.changeab(chairdrop, newqueries, preddict)
+                    finalquery = chairdrop.reformat.combinequeries(chairdrop, newerqueries, preddict)
+                    variables.dropinvestigationqueries[i][j] = finalquery
+
+                    Log.writetolog(Log, 'Now running investigation for ' + str(i) + ': ' + str(j))
+
+                    try:
+                        temp = database.Query.runquery(Confirmation, finalquery)
+                        variables.dropinvestigations[i][j] = temp
+                        Log.writetolog(Log, 'Investigation successfully run. Here are the results:\n\t' + str(temp))
+                        temp = ''
+                    except pypyodbc.ProgrammingError:
+                        variables.errorcount += 1
+                        variables.errordocs.append(i)
+                        removeddocs.append(i)
+                        Log.writetolog(Log, 'An error has occurred in this query. Please run the query in SQL Server for more information.')
+                    except pypyodbc.DatabaseError:
+                        variables.errorcount += 1
+                        variables.errordocs.append(i)
+                        removeddocs.append(i)
+                        Log.writetolog(Log, 'Connection unsuccessful. Skipping document. Please run the query in SQL Server for more information')
+            # ---------------------------------------------------------------------------------------------------------------------------
         for i in removeddocs:
             variables.valdocs.remove(i)
 
         Log.writetolog(Log, 'Queries completed with ' + str(variables.errorcount) + ' errors.\n\tErrored documents are: ' + str(variables.errordocs) + '.')
+        # ----------------------------------------------------------------------------------------------------------
 
         RunFrame.progress1.set('Queries finished. Now setting up xlsx sheets...')
         RunFrame.progresslabel1.update()
