@@ -296,6 +296,7 @@ class reformat:
         # --------------------------------------------------------------------------------------
         return preddict
 
+    # Alter the interior of the A and B subqueries to accomodate the new dimensions
     def changeab(self, queries, preddict):
         table1 = preddict['B']
         table2 = preddict['A']
@@ -346,7 +347,7 @@ class reformat:
                     tempquery += ' ' + k + ', '
             elif pred == 1:
                 tempquery += ' GROUP BY '
-                for k in table2preds:
+                for k in table1preds:
                     tempquery += ' ' + k + ', '
 
             tempquery = tempquery[:-2:]

@@ -713,7 +713,7 @@ class RunFrame(tkinter.Frame):
                 variables.errorcount += 1
                 variables.errordocs.append(i)
                 removeddocs.append(i)
-                Log.writetolog(Log, 'An error has occurred in this query. Please run the query in SQL Server for more information.')
+                Log.writetolog(Log, 'ERROR: An error has occurred in this query. Please run the query in SQL Server for more information.')
                 RunFrame.progress2.set('Run Unsuccessful. Please see the log for details.')
                 RunFrame.progresslabel2.update()
                 time.sleep(3)
@@ -721,14 +721,18 @@ class RunFrame(tkinter.Frame):
                 variables.errorcount += 1
                 variables.errordocs.append(i)
                 removeddocs.append(i)
-                Log.writetolog(Log, 'Connection unsuccessful. Skipping document. Please run the query in SQL Server for more information')
+                Log.writetolog(Log, 'ERROR: Connection unsuccessful. Skipping document. Please run the query in SQL Server for more information')
                 RunFrame.progress2.set('Run unsuccessful. Please see the log for details.')
                 RunFrame.progresslabel2.update()
                 time.sleep(3)
 
             # Run drop investigations ----------------------------------------------------------------------------------------------------
             RunFrame.progress2.set('Drop(s) detected. Investigating...')
+            RunFrame.progresslabel2.update()
+            time.sleep(1)
             if i in variables.drops:
+                variables.dropinvestigationqueries[i] = {}
+                variables.dropinvestigations[i] = {}
                 for j in variables.drops[i]:
                     sql = Other.removewhitespace(Other, variables.finalqueries[i])
                     unions = chairdrop.reformat.findunions(chairdrop, sql, j[0], j[1])
@@ -737,25 +741,24 @@ class RunFrame(tkinter.Frame):
                     preddict = chairdrop.reformat.standid(chairdrop, newqueries)
                     newerqueries = chairdrop.reformat.changeab(chairdrop, newqueries, preddict)
                     finalquery = chairdrop.reformat.combinequeries(chairdrop, newerqueries, preddict)
-                    variables.dropinvestigationqueries[i][j] = finalquery
+                    variables.dropinvestigationqueries[i][(j[0], j[1])] = finalquery
 
                     Log.writetolog(Log, 'Now running investigation for ' + str(i) + ': ' + str(j))
+                    Log.writetolog(Log, 'Here\'s the query for ' +str(i) + ': ' + str(j) + ': ' + finalquery)
 
                     try:
                         temp = database.Query.runquery(Confirmation, finalquery)
-                        variables.dropinvestigations[i][j] = temp
+                        variables.dropinvestigations[i][(j[0], j[1])] = temp
                         Log.writetolog(Log, 'Investigation successfully run. Here are the results:\n\t' + str(temp))
                         temp = ''
                     except pypyodbc.ProgrammingError:
                         variables.errorcount += 1
-                        variables.errordocs.append(i)
-                        removeddocs.append(i)
-                        Log.writetolog(Log, 'An error has occurred in this query. Please run the query in SQL Server for more information.')
+                        del variables.drops[i][j]
+                        Log.writetolog(Log, 'ERROR: An error has occurred in this query. Please run the query in SQL Server for more information.')
                     except pypyodbc.DatabaseError:
                         variables.errorcount += 1
-                        variables.errordocs.append(i)
-                        removeddocs.append(i)
-                        Log.writetolog(Log, 'Connection unsuccessful. Skipping document. Please run the query in SQL Server for more information')
+                        del variables.drops[i][j]
+                        Log.writetolog(Log, 'ERROR: Connection unsuccessful. Skipping document. Please run the query in SQL Server for more information')
             # ---------------------------------------------------------------------------------------------------------------------------
         for i in removeddocs:
             variables.valdocs.remove(i)
@@ -817,10 +820,19 @@ class RunFrame(tkinter.Frame):
             RunFrame.progress2.set('Creating sheet for ' + str(variables.docnames[i]))
             RunFrame.progresslabel2.update()
             xlsxsheet.addsheet(xlsxsheet, workbook, variables.docnames[i], host + '/index.html?id=' + str(i), str(variables.docstartdate[i]) + ' - ' + str(variables.docenddate[i]), variables.doclastmodified[i], variables.docaggs[i], docresults[i], dataset, variables.finalqueries[i], image)
-            webbrowser.open_new_tab(host + '/index.html?id=' + str(i))
+            # webbrowser.open_new_tab(host + '/index.html?id=' + str(i))
             Log.writetolog(Log, 'Excel sheet for ' + str(i) + ' successful.')
             time.sleep(2)
-
+            # Adding drop investigations ---------------------------------------------------------------------------------------------
+            if i in variables.drops:
+                for j in variables.drops[i]:
+                    Log.writetolog(Log, 'Attempting to create drop excel sheet for: ' + str(variables.docnames[i]) + ': ' + str(variables.drops[i]))
+                    RunFrame.progress2.set('Creating sheet for drop investigations for steps ' + str(j[0]) + ' and ' + str(j[1]))
+                    RunFrame.progresslabel2.update()
+                    xlsxsheet.adddropinvest(xlsxsheet, workbook, variables.dropinvestigations[i][(j[0],j[1])], variables.dropinvestigationqueries[i][(j[0],j[1])])
+                    Log.writetolog(Log, 'Drop sheet for ' + str(i) + ' successful.')
+                    time.sleep(2)
+            # ------------------------------------------------------------------------------------------------------------------------
         workbook.close()
 
         RunFrame.progress2.set('')

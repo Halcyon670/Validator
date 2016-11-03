@@ -96,3 +96,8 @@ class xlsxsheet:
 
         if image != '':
             worksheet.insert_image(1, width + 3, image, {'x_scale': 0.25, 'y_scale': 0.25})
+
+    def adddropinvest(self, workbook, drop, query):
+
+        xlsxsheet.xlsxcount += 1
+        worksheet = workbook.add_worksheet('Drop Investigation')
