@@ -829,7 +829,7 @@ class RunFrame(tkinter.Frame):
                     Log.writetolog(Log, 'Attempting to create drop excel sheet for: ' + str(variables.docnames[i]) + ': ' + str(variables.drops[i]))
                     RunFrame.progress2.set('Creating sheet for drop investigations for steps ' + str(j[0]) + ' and ' + str(j[1]))
                     RunFrame.progresslabel2.update()
-                    xlsxsheet.adddropinvest(xlsxsheet, workbook, variables.dropinvestigations[i][(j[0],j[1])], variables.dropinvestigationqueries[i][(j[0],j[1])])
+                    xlsxsheet.adddropinvest(xlsxsheet, workbook, [], variables.dropinvestigations[i][(j[0], j[1])], variables.dropinvestigationqueries[i][(j[0],j[1])])
                     Log.writetolog(Log, 'Drop sheet for ' + str(i) + ' successful.')
                     time.sleep(2)
             # ------------------------------------------------------------------------------------------------------------------------
