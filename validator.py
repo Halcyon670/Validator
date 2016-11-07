@@ -727,10 +727,11 @@ class RunFrame(tkinter.Frame):
                 time.sleep(3)
 
             # Run drop investigations ----------------------------------------------------------------------------------------------------
-            RunFrame.progress2.set('Drop(s) detected. Investigating...')
-            RunFrame.progresslabel2.update()
-            time.sleep(1)
             if i in variables.drops:
+                RunFrame.progress2.set('Drop(s) detected. Investigating...')
+                RunFrame.progresslabel2.update()
+                time.sleep(1)
+
                 variables.dropinvestigationqueries[i] = {}
                 variables.dropinvestigations[i] = {}
                 variables.dropinvestigationcolumns[i] = {}
@@ -825,9 +826,7 @@ class RunFrame(tkinter.Frame):
                         else:
                             dataset.append('')
                         break
-
             # ------------------------------------------------------------------------------------------------------------------------
-
             Log.writetolog(Log, 'Attempting to create the excel sheet for ' + str(variables.docnames[i]))
             RunFrame.progress2.set('Creating sheet for ' + str(variables.docnames[i]))
             RunFrame.progresslabel2.update()
@@ -841,7 +840,7 @@ class RunFrame(tkinter.Frame):
                     Log.writetolog(Log, 'Attempting to create drop excel sheet for: ' + str(variables.docnames[i]) + ': ' + str(variables.drops[i]))
                     RunFrame.progress2.set('Creating sheet for drop investigations for steps ' + str(j[0]) + ' and ' + str(j[1]))
                     RunFrame.progresslabel2.update()
-                    xlsxsheet.adddropinvest(xlsxsheet, workbook, variables.dropinvestigationcolumns[i][j[0], j[1]], variables.dropinvestigations[i][(j[0], j[1])], variables.dropinvestigationqueries[i][(j[0],j[1])])
+                    xlsxsheet.adddropinvest(xlsxsheet, workbook, variables.dropinvestigationcolumns[i][j[0], j[1]], variables.dropinvestigations[i][(j[0], j[1])], variables.dropinvestigationqueries[i][(j[0], j[1])])
                     Log.writetolog(Log, 'Drop sheet for ' + str(i) + ' successful.')
                     time.sleep(2)
             # ------------------------------------------------------------------------------------------------------------------------
