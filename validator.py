@@ -733,12 +733,25 @@ class RunFrame(tkinter.Frame):
             if i in variables.drops:
                 variables.dropinvestigationqueries[i] = {}
                 variables.dropinvestigations[i] = {}
+                variables.dropinvestigationcolumns[i] = {}
                 for j in variables.drops[i]:
                     sql = Other.removewhitespace(Other, variables.finalqueries[i])
                     unions = chairdrop.reformat.findunions(chairdrop, sql, j[0], j[1])
                     queries = chairdrop.reformat.findqueries(chairdrop, sql, unions)
                     newqueries = chairdrop.reformat.removestep(chairdrop, queries)
                     preddict = chairdrop.reformat.standid(chairdrop, newqueries)
+
+                    datagrid = ['Drops']
+                    for k in preddict[[preddict['A']][0]]:
+                        datagrid.append(k)
+                    for k in variables.docaggs[i]:
+                        datagrid.append(k)
+                    for k in preddict[[preddict['B']][0]]:
+                        datagrid.append(k)
+                    for k in variables.docaggs[i]:
+                        datagrid.append(k)
+                    variables.dropinvestigationcolumns[i][j[0], j[1]] = datagrid
+
                     newerqueries = chairdrop.reformat.changeab(chairdrop, newqueries, preddict)
                     finalquery = chairdrop.reformat.combinequeries(chairdrop, newerqueries, preddict)
                     variables.dropinvestigationqueries[i][(j[0], j[1])] = finalquery
@@ -797,7 +810,6 @@ class RunFrame(tkinter.Frame):
 
             # -----------------------------------------------------------------------------------------------------------------------
             # Attempt to grab and attach the datasets -------------------------------------------------------------------------------
-
             dataset = []
 
             parsed_json = json.loads(variables.newdocjson[i])
@@ -829,7 +841,7 @@ class RunFrame(tkinter.Frame):
                     Log.writetolog(Log, 'Attempting to create drop excel sheet for: ' + str(variables.docnames[i]) + ': ' + str(variables.drops[i]))
                     RunFrame.progress2.set('Creating sheet for drop investigations for steps ' + str(j[0]) + ' and ' + str(j[1]))
                     RunFrame.progresslabel2.update()
-                    xlsxsheet.adddropinvest(xlsxsheet, workbook, [], variables.dropinvestigations[i][(j[0], j[1])], variables.dropinvestigationqueries[i][(j[0],j[1])])
+                    xlsxsheet.adddropinvest(xlsxsheet, workbook, variables.dropinvestigationcolumns[i][j[0], j[1]], variables.dropinvestigations[i][(j[0], j[1])], variables.dropinvestigationqueries[i][(j[0],j[1])])
                     Log.writetolog(Log, 'Drop sheet for ' + str(i) + ' successful.')
                     time.sleep(2)
             # ------------------------------------------------------------------------------------------------------------------------

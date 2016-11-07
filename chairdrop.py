@@ -1,5 +1,5 @@
-import xml.etree.ElementTree as ET
 import difflib
+import variables
 
 class reformat:
 

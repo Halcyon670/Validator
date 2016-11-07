@@ -22,6 +22,7 @@ removeddocs = []
 drops = {}
 dropinvestigationqueries = {}
 dropinvestigations = {}
+dropinvestigationcolumns = {}
 
 # System variables
 errorcount = 0
