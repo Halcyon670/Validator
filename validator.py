@@ -758,7 +758,7 @@ class RunFrame(tkinter.Frame):
                     variables.dropinvestigationqueries[i][(j[0], j[1])] = finalquery
 
                     Log.writetolog(Log, 'Now running investigation for ' + str(i) + ': ' + str(j))
-                    Log.writetolog(Log, 'Here\'s the query for ' +str(i) + ': ' + str(j) + ': ' + finalquery)
+                    Log.writetolog(Log, 'Here\'s the query for ' + str(i) + ': ' + str(j) + ': ' + finalquery)
 
                     try:
                         temp = database.Query.runquery(Confirmation, finalquery)
@@ -767,11 +767,11 @@ class RunFrame(tkinter.Frame):
                         temp = ''
                     except pypyodbc.ProgrammingError:
                         variables.errorcount += 1
-                        del variables.drops[i][j]
+                        del variables.drops[i][(j[0], j[1])]
                         Log.writetolog(Log, 'ERROR: An error has occurred in this query. Please run the query in SQL Server for more information.')
                     except pypyodbc.DatabaseError:
                         variables.errorcount += 1
-                        del variables.drops[i][j]
+                        del variables.drops[i][(j[0], j[1])]
                         Log.writetolog(Log, 'ERROR: Connection unsuccessful. Skipping document. Please run the query in SQL Server for more information')
             # ---------------------------------------------------------------------------------------------------------------------------
         for i in removeddocs:
