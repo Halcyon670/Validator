@@ -6,6 +6,7 @@ import sqlparse
 class xlsxsheet:
 
     xlsxcount = 0
+    dropcount = 1
 
     def addsheet(self, workbook, name, url, daterange, lastmodified, metricnames, steps, datagrid, sql, image):
 
@@ -91,8 +92,53 @@ class xlsxsheet:
 
         n += 2
 
-
         worksheet.insert_textbox(n, 0, sqlparse.format(sql, reindent=True, keyword_case='upper'), textboxoption)
 
         if image != '':
             worksheet.insert_image(1, width + 3, image, {'x_scale': 0.25, 'y_scale': 0.25})
+
+    # Drop investigation xlsx sheet
+    def adddropinvest(self, workbook, columns, drop, sql):
+
+        xlsxsheet.xlsxcount += 1
+        worksheet = workbook.add_worksheet('Drop Investigation ' + str(xlsxsheet.dropcount))
+        xlsxsheet.dropcount += 1
+
+        stepformat = workbook.add_format({'fg_color': '#ededed', 'border': 1})
+        metricnameformat = workbook.add_format({'fg_color': '#ddebf7', 'underline': True, 'bold': True, 'border': 1})
+        datagridformat = workbook.add_format({'fg_color': '#e2efda', 'border': 1, 'bold': True})
+        textboxoption = {'width': 1000, 'height': 20000}
+
+        # Add in the column names --------------------------------------------------------------------
+        n = 1
+        m = 1
+
+        for i in columns:
+            worksheet.write(n, m, i, metricnameformat)
+            m += 1
+        # --------------------------------------------------------------------------------------------
+        # Add in the query results -------------------------------------------------------------------
+        m = 1
+        n += 1
+        maxlen = 0
+
+        for i in drop:
+            for j in i:
+                worksheet.write(n, m, j, stepformat)
+                m += 1
+            if maxlen == 0:
+                maxlen = m
+            m = 1
+            n += 1
+        # ---------------------------------------------------------------------------------------------
+        # Add in the sum totals -----------------------------------------------------------------------
+        n += 1
+
+        worksheet.write(n, 0, 'Totals:')
+        for i in range(maxlen-1):
+            worksheet.write(n, m, '=SUM(' + str(other.Other.alphanumupper(other, m)) + '3:' + str(other.Other.alphanumupper(other, m)) + str(n-1) + ')', datagridformat)
+            m += 1
+        # ---------------------------------------------------------------------------------------------
+        # Add in the query ----------------------------------------------------------------------------
+        n += 2
+        worksheet.insert_textbox(n, 1, sqlparse.format(sql, reindent=True, keyword_case='upper'), textboxoption)

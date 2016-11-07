@@ -19,6 +19,10 @@ newdocjson = {}
 docqueries = {}
 finalqueries = {}
 removeddocs = []
+drops = {}
+dropinvestigationqueries = {}
+dropinvestigations = {}
+dropinvestigationcolumns = {}
 
 # System variables
 errorcount = 0
