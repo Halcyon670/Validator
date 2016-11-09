@@ -383,7 +383,7 @@ class Confirmation(tkinter.Frame):
         # Clear the listboxes before moving on
         Confirmation.metriclistbox.delete(0, 100000)
         Confirmation.restrictlistbox.delete(0, 10000)
-        removeddocs = []
+        Confirmation.removeddocs = []
 
         # Check to see if we are at the end of the list. If we are, move on to the next piece.
         if len(valdocs) > 0 is not None:
@@ -440,7 +440,7 @@ class Confirmation(tkinter.Frame):
             Confirmation.docname.set(Confirmation.docnames[valdocs[0]])
 
         else:
-            variables.removeddocs = removeddocs
+            variables.removeddocs = Confirmation.removeddocs
             controller.show_frame(RunFrame)
 
     def cont(self, controller):
@@ -454,9 +454,15 @@ class Confirmation(tkinter.Frame):
         for i in Confirmation.restrictlistbox.curselection():
             userrestrictlist.append(Confirmation.restrictlistbox.get(i))
 
-        variables.finalqueries[Confirmation.valdocs[0]] = reformat.Reconstruction.recombine(reformat, Confirmation.docjoins, useragglist, Confirmation.docwhere, Confirmation.docaggdict, Confirmation.docjoindict, Confirmation.docwhereand, userrestrictlist)
-        Log.writetolog(Log, 'Final data about ' + str(Confirmation.valdocs[0]) + ':' + '\n\tUserAggList: ' + str(useragglist) + '\n\tUserRestrictList: ' + str(userrestrictlist) + '\n\tFinalQuery: ' + str(variables.finalqueries[Confirmation.valdocs[0]]))
-        variables.docaggs[Confirmation.valdocs[0]] = useragglist
+        try:
+            variables.finalqueries[Confirmation.valdocs[0]] = reformat.Reconstruction.recombine(reformat, Confirmation.docjoins, useragglist, Confirmation.docwhere, Confirmation.docaggdict, Confirmation.docjoindict, Confirmation.docwhereand, userrestrictlist)
+            Log.writetolog(Log, 'Final data about ' + str(Confirmation.valdocs[0]) + ':' + '\n\tUserAggList: ' + str(useragglist) + '\n\tUserRestrictList: ' + str(userrestrictlist) + '\n\tFinalQuery: ' + str(variables.finalqueries[Confirmation.valdocs[0]]))
+            variables.docaggs[Confirmation.valdocs[0]] = useragglist
+        except IndexError:
+            variables.errorcount += 1
+            variables.errordocs.append(Confirmation.valdocs[0])
+            Confirmation.removeddocs.append(Confirmation.valdocs[0])
+            Log.writetolog(Log, 'Unable to create a query for ' + str(Confirmation.valdocs[0]) + '. Removing from doc list and moving on.')
 
         Confirmation.docaggs = []
         Confirmation.docaggdict = {}
@@ -688,8 +694,13 @@ class RunFrame(tkinter.Frame):
         root = ET.fromstring(config)
 
         host = root.find('./URLSettings/URL').text
+
         # --------------------------------------------------
         # Run the queries in the database, and take note of any errors --------------------------------------
+        for i in variables.removeddocs:
+            variables.valdocs.remove(i)
+        print(variables.removeddocs)
+        print(removeddocs)
         for i in variables.valdocs:
             RunFrame.progress1.set('Now working on ' + str(variables.docnames[i]))
             RunFrame.progress2.set('Attempting to run in the database...')
@@ -767,11 +778,11 @@ class RunFrame(tkinter.Frame):
                         temp = ''
                     except pypyodbc.ProgrammingError:
                         variables.errorcount += 1
-                        del variables.drops[i][(j[0], j[1])]
+                        del variables.drops[i][variables.drops[i].index([j[0], j[1]])]
                         Log.writetolog(Log, 'ERROR: An error has occurred in this query. Please run the query in SQL Server for more information.')
                     except pypyodbc.DatabaseError:
                         variables.errorcount += 1
-                        del variables.drops[i][(j[0], j[1])]
+                        del variables.drops[i][variables.drops[i].index([j[0], j[1]])]
                         Log.writetolog(Log, 'ERROR: Connection unsuccessful. Skipping document. Please run the query in SQL Server for more information')
             # ---------------------------------------------------------------------------------------------------------------------------
         for i in removeddocs:
