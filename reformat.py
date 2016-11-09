@@ -19,6 +19,22 @@ class Formatting:
             position += 1
         return worddict
 
+    def keywordsearchagg(self, keyword, sql):
+        position = 0
+        word = ''
+        worddict = {}
+
+        for i in sql:
+            if i.isalpha():
+                word = word + i
+            else:
+                for j in keyword:
+                    if word == j and sql[position] == '(': # Fix to make sure that aggregates have parens afterward
+                        worddict[position - len(j)] = j
+                word = ''
+            position += 1
+        return worddict
+
     def parensubstring(self, sql, position):
         parencount = 0
         newsql = ''
@@ -138,10 +154,11 @@ class SectionStrip:
 
         subselect = sql[:selectfrom - 1]
         # ---------------------------------------------------------------------------------------------------------------------------------
-        aggpos = Formatting.keywordsearch(Formatting, ['SUM', 'COUNT', 'AVG'], subselect)
+        aggpos = Formatting.keywordsearchagg(Formatting, ['SUM', 'COUNT', 'AVG'], subselect)
         aggposordered = Formatting.dictorder(Formatting, aggpos)
         aggfinal = []
         pos = 0
+
         for i in aggposordered:
             temp = ''
 
