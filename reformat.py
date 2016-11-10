@@ -154,7 +154,7 @@ class SectionStrip:
 
         subselect = sql[:selectfrom - 1]
         # ---------------------------------------------------------------------------------------------------------------------------------
-        aggpos = Formatting.keywordsearchagg(Formatting, ['SUM', 'COUNT', 'AVG'], subselect)
+        aggpos = Formatting.keywordsearchagg(Formatting, ['SUM', 'COUNT', 'AVG', 'MAX', 'MIN'], subselect)
         aggposordered = Formatting.dictorder(Formatting, aggpos)
         aggfinal = []
         pos = 0
@@ -173,6 +173,13 @@ class SectionStrip:
             try:
                 if subselect[i - 1] == ' ' and subselect[i - 2] == 'N' and subselect[i - 3] == 'E' and subselect[i - 4] == 'H' and subselect[i - 5] == 'W' and subselect[i - 6] == ' ' and subselect[i - 7] == 'E' and subselect[i - 8] == 'S' and subselect[i - 9] == 'A' and subselect[i - 10] == 'C':
                     pos -= 10
+            except IndexError:
+                pass
+            # ----------------------------------------------------------------------------------------------------------------------------
+            # Create an exception to handle certain invalid formats ----------------------------------------------------------------------
+            try:
+                if subselect[pos - 1] != ',' and subselect[pos - 2] != ',':
+                    continue
             except IndexError:
                 pass
             # ----------------------------------------------------------------------------------------------------------------------------
