@@ -440,7 +440,9 @@ class Confirmation(tkinter.Frame):
             Confirmation.docname.set(Confirmation.docnames[valdocs[0]])
 
         else:
-            variables.removeddocs = Confirmation.removeddocs
+            for i in Confirmation.removeddocs:
+                if i not in variables.removeddocs:
+                    variables.removeddocs.append(i)
             controller.show_frame(RunFrame)
 
     def cont(self, controller):
@@ -461,7 +463,7 @@ class Confirmation(tkinter.Frame):
         except IndexError:
             variables.errorcount += 1
             variables.errordocs.append(Confirmation.valdocs[0])
-            Confirmation.removeddocs.append(Confirmation.valdocs[0])
+            variables.removeddocs.append(Confirmation.valdocs[0])
             Log.writetolog(Log, 'Unable to create a query for ' + str(Confirmation.valdocs[0]) + '. Removing from doc list and moving on.')
 
         Confirmation.docaggs = []
@@ -699,8 +701,7 @@ class RunFrame(tkinter.Frame):
         # Run the queries in the database, and take note of any errors --------------------------------------
         for i in variables.removeddocs:
             variables.valdocs.remove(i)
-        print(variables.removeddocs)
-        print(removeddocs)
+
         for i in variables.valdocs:
             RunFrame.progress1.set('Now working on ' + str(variables.docnames[i]))
             RunFrame.progress2.set('Attempting to run in the database...')
@@ -841,7 +842,7 @@ class RunFrame(tkinter.Frame):
             Log.writetolog(Log, 'Attempting to create the excel sheet for ' + str(variables.docnames[i]))
             RunFrame.progress2.set('Creating sheet for ' + str(variables.docnames[i]))
             RunFrame.progresslabel2.update()
-            xlsxsheet.addsheet(xlsxsheet, workbook, variables.docnames[i], host + '/index.html?id=' + str(i), str(variables.docstartdate[i]) + ' - ' + str(variables.docenddate[i]), variables.doclastmodified[i], variables.docaggs[i], docresults[i], dataset, variables.finalqueries[i], image)
+            xlsxsheet.addsheet(xlsxsheet, workbook, variables.docnames[i], 'http://' + host + '/index.html?id=' + str(i), str(variables.docstartdate[i]) + ' - ' + str(variables.docenddate[i]), variables.doclastmodified[i], variables.docaggs[i], docresults[i], dataset, variables.finalqueries[i], image)
             # webbrowser.open_new_tab(host + '/index.html?id=' + str(i))
             Log.writetolog(Log, 'Excel sheet for ' + str(i) + ' successful.')
             time.sleep(2)
