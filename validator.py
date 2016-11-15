@@ -295,18 +295,19 @@ class DocList(tkinter.Frame):
     def validate(self, controller):
 
         # Populate DropComparison -------------------------------------------------------------
-        config = ''
-        file = open('config.xml', 'r')
-        for i in file:
-            config += i
-        file.close()
+        if len(variables.dropcomparison) == 0:
+            config = ''
+            file = open('config.xml', 'r')
+            for i in file:
+                config += i
+            file.close()
 
-        root = ET.fromstring(config)
+            root = ET.fromstring(config)
 
-        dropcomparisonstring = root.find('./AdvancedSettings/DropComparison').text
+            dropcomparisonstring = root.find('./AdvancedSettings/DropComparison').text
 
-        if dropcomparisonstring is not None:
-            variables.dropcomparison = dropcomparisonstring.split(',')
+            if dropcomparisonstring is not None:
+                variables.dropcomparison = dropcomparisonstring.split(',')
         # -------------------------------------------------------------------------------------
 
         REST.getcookie(REST)

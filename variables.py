@@ -25,6 +25,7 @@ removeddrops = []
 dropinvestigationqueries = {}
 dropinvestigations = {}
 dropinvestigationcolumns = {}
+currentdropscolumns = []
 
 # System variables
 errorcount = 0

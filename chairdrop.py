@@ -104,6 +104,12 @@ class reformat:
 
             selectqueriesstep.append(i.replace(i[firstpos:pos+1], '')[::-1])
         # -----------------------------------------------------------------------------
+        # Check for drop comparisons --------------------------------------------------
+        if len(variables.dropcomparison) != 0:
+            for k in variables.dropcomparison:
+                if 'AS ' + k.upper() + ',' in str(selectqueries).upper():
+                    variables.currentdropscolumns.append(k)
+        # ------------------------------------------------------------------------------
         # Now remove StepInfo: ---------------------------------------------------------
         selectqueriesstepinfo = []
 
@@ -131,8 +137,7 @@ class reformat:
 
             selectqueriesstepinfo.append(i.replace(i[:pos+2], '')[::-1])
         # ---------------------------------------------------------------------------
-
-        # Return the modified queries ----------------------------------------------
+        # Return the modified queries -----------------------------------------------
         finalqueries = []
         querynum = 0
 
@@ -402,9 +407,42 @@ class reformat:
             pred += 1
 
         # Check for comparisons -----------------------------------------------------------------
-        if len(variables.dropcomparison) != 0:
-            for k in variables.dropcomparison:
-                pass
+        if len(variables.currentdropscolumns) > 0:
+            # Begin the process with the first few lines -------------------------------------------
+            finalquery += ' UNION ALL '
+            finalquery += 'SELECT \'Mismatch\' AS Info, * FROM ('
+            finalquery += queries[0]
+            finalquery += ') AS A LEFT JOIN ('
+            finalquery += queries[1]
+            finalquery += ') AS B ON '
+            # --------------------------------------------------------------------------------------
+            # Add in the join predicates -----------------------------------------------------------
+            pred = 0
+
+            while pred < len(table1preds):
+                if pred != 0:
+                    finalquery += ' AND '
+
+                finalquery += table2preds[pred].replace(table2, 'A')
+                finalquery += ' = '
+                finalquery += table1preds[pred].replace(table1, 'B')
+
+                pred += 1
+            # Add the WHERE clause -----------------------------------------------------------------
+            finalquery += ' WHERE '
+            andflag = False
+
+            for k in variables.currentdropscolumns:
+                if andflag is True:
+                    finalquery += ' AND '
+
+                finalquery += ' A.' + k + ' != ' + 'B.' + k
+
+                if andflag is False:
+                    andflag = True
+
+        variables.currentdropscolumns = []
+
         return finalquery
 
 
