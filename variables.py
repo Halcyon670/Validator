@@ -10,6 +10,7 @@ docdescription = {}
 doctag = {}
 docaggs = {}
 docimages = {}
+dropcomparison = []
 
 # Variables over local list of docs:
 valdocs = []
@@ -20,6 +21,7 @@ docqueries = {}
 finalqueries = {}
 removeddocs = []
 drops = {}
+removeddrops = []
 dropinvestigationqueries = {}
 dropinvestigations = {}
 dropinvestigationcolumns = {}

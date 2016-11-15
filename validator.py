@@ -85,6 +85,8 @@ class StartPage(tkinter.Frame):
         Settings.databasepasstext.delete(1.0, tkinter.END)
         Settings.startingjointext.delete(1.0, tkinter.END)
         Settings.endingjointext.delete(1.0, tkinter.END)
+        Settings.dropcomparisontext.delete(1.0, tkinter.END)
+
         config = ''
         file = open('config.xml', 'r')
         for i in file:
@@ -103,6 +105,30 @@ class StartPage(tkinter.Frame):
         dbpassword = root.find('./DatabaseSettings/Password').text
         startingjoins = root.find('./AdvancedSettings/StartingJoins').text
         endingjoins = root.find('./AdvancedSettings/EndingJoins').text
+        dropcomparison = root.find('./AdvancedSettings/DropComparison').text
+
+        if url is None:
+            url = ''
+        if urluser is None:
+            urluser = ''
+        if urlpass is None:
+            urlpass = ''
+        if dbdriver is None:
+            dbdriver = ''
+        if dbserver is None:
+            dbserver = ''
+        if dbdatabase is None:
+            dbdatabase = ''
+        if dbuser is None:
+            dbuser = ''
+        if dbpassword is None:
+            dbpassword = ''
+        if startingjoins is None:
+            startingjoins = ''
+        if endingjoins is None:
+            endingjoins = ''
+        if dropcomparison is None:
+            dropcomparison = ''
 
         Settings.urltext.insert(tkinter.END, url)
         Settings.urlusertext.insert(tkinter.END, urluser)
@@ -114,6 +140,7 @@ class StartPage(tkinter.Frame):
         Settings.databasepasstext.insert(tkinter.END, dbpassword)
         Settings.startingjointext.insert(tkinter.END, startingjoins)
         Settings.endingjointext.insert(tkinter.END, endingjoins)
+        Settings.dropcomparisontext.insert(tkinter.END, dropcomparison)
 
         controller.show_frame(Settings)
 
@@ -267,6 +294,21 @@ class DocList(tkinter.Frame):
     # Takes and for
     def validate(self, controller):
 
+        # Populate DropComparison -------------------------------------------------------------
+        config = ''
+        file = open('config.xml', 'r')
+        for i in file:
+            config += i
+        file.close()
+
+        root = ET.fromstring(config)
+
+        dropcomparisonstring = root.find('./AdvancedSettings/DropComparison').text
+
+        if dropcomparisonstring is not None:
+            variables.dropcomparison = dropcomparisonstring.split(',')
+        # -------------------------------------------------------------------------------------
+
         REST.getcookie(REST)
         REST.authentify(REST)
         REST.getUser(REST)
@@ -403,23 +445,29 @@ class Confirmation(tkinter.Frame):
             endjoinlist = []
             temp = ''
 
-            for i in startjoins:
-                if i != ',':
-                    temp += i
-                else:
-                    startjoinlist.append(temp)
-                    temp = ''
-            startjoinlist.append(temp)
-            temp = ''
+            try:
+                for i in startjoins:
+                    if i != ',':
+                        temp += i
+                    else:
+                        startjoinlist.append(temp)
+                        temp = ''
+                startjoinlist.append(temp)
+                temp = ''
+            except TypeError:
+                pass
 
-            for i in endjoins:
-                if i != ',':
-                    temp += i
-                else:
-                    endjoinlist.append(temp)
-                    temp = ''
-            endjoinlist.append(temp)
-            temp = ''
+            try:
+                for i in endjoins:
+                    if i != ',':
+                        temp += i
+                    else:
+                        endjoinlist.append(temp)
+                        temp = ''
+                endjoinlist.append(temp)
+                temp = ''
+            except TypeError:
+                pass
 
             for i in Confirmation.docjoins:
                 if i in endjoinlist:
@@ -559,6 +607,12 @@ class Settings(tkinter.Frame):
         Settings.endingjointext = tkinter.Text(self, height=1, width=35)
         Settings.endingjointext.grid(row=5, column=2, padx=2)
 
+        Settings.dropcomparisonlabel = tkinter.Label(self, text='Comparison Metric:')
+        Settings.dropcomparisonlabel.grid(row=6, column=2, sticky='w', padx=20)
+
+        Settings.dropcomparisontext = tkinter.Text(self, height=1, width=35)
+        Settings.dropcomparisontext.grid(row=7, column=2, padx=2)
+
         # Testing Stuff
         Settings.urlstring = tkinter.StringVar()
         Settings.dbstring = tkinter.StringVar()
@@ -597,6 +651,7 @@ class Settings(tkinter.Frame):
         dbpass = Settings.databasepasstext.get(1.0, tkinter.END)
         startjoins = Settings.startingjointext.get(1.0, tkinter.END)
         endjoins = Settings.endingjointext.get(1.0, tkinter.END)
+        dropcomparison = Settings.dropcomparisontext.get(1.0, tkinter.END)
 
         # Need to include this. Otherwise it completely ruins the formatting of the document.
         url = url.replace('\n', '')
@@ -609,6 +664,7 @@ class Settings(tkinter.Frame):
         dbpass = dbpass.replace('\n', '')
         startjoins = startjoins.replace('\n', '')
         endjoins = endjoins.replace('\n', '')
+        dropcomparison = dropcomparison.replace('\n', '')
 
         root = ET.parse('config.xml')
         root.find('./URLSettings/URL').text = url
@@ -621,6 +677,7 @@ class Settings(tkinter.Frame):
         root.find('./DatabaseSettings/Password').text = dbpass
         root.find('./AdvancedSettings/StartingJoins').text = startjoins
         root.find('./AdvancedSettings/EndingJoins').text = endjoins
+        root.find('./AdvancedSettings/DropComparison').text = dropcomparison
         root.write('config.xml')
 
         controller.show_frame(StartPage)
@@ -747,6 +804,7 @@ class RunFrame(tkinter.Frame):
                 variables.dropinvestigationqueries[i] = {}
                 variables.dropinvestigations[i] = {}
                 variables.dropinvestigationcolumns[i] = {}
+                variables.removeddrops = []
                 for j in variables.drops[i]:
                     sql = Other.removewhitespace(Other, variables.finalqueries[i])
                     unions = chairdrop.reformat.findunions(chairdrop, sql, j[0], j[1])
@@ -779,12 +837,14 @@ class RunFrame(tkinter.Frame):
                         temp = ''
                     except pypyodbc.ProgrammingError:
                         variables.errorcount += 1
-                        del variables.drops[i][variables.drops[i].index([j[0], j[1]])]
+                        variables.removeddrops.append([j[0], j[1]])
                         Log.writetolog(Log, 'ERROR: An error has occurred in this query. Please run the query in SQL Server for more information.')
                     except pypyodbc.DatabaseError:
                         variables.errorcount += 1
-                        del variables.drops[i][variables.drops[i].index([j[0], j[1]])]
+                        variables.removeddrops.append([j[0], j[1]])
                         Log.writetolog(Log, 'ERROR: Connection unsuccessful. Skipping document. Please run the query in SQL Server for more information')
+                for k in variables.removeddrops:
+                    del variables.drops[i][variables.drops[i].index(k)]
             # ---------------------------------------------------------------------------------------------------------------------------
         for i in removeddocs:
             variables.valdocs.remove(i)

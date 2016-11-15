@@ -401,6 +401,10 @@ class reformat:
 
             pred += 1
 
+        # Check for comparisons -----------------------------------------------------------------
+        if len(variables.dropcomparison) != 0:
+            for k in variables.dropcomparison:
+                pass
         return finalquery
 
 
