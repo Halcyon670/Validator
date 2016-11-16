@@ -11,12 +11,12 @@ from xlsx import xlsxsheet
 import xlsxwriter
 from datetime import datetime
 from log import Log
-import webbrowser
 import time
 import socket
 import http.client
 import os.path
 import chairdrop
+import sqlparse
 
 class ValidationMain(tkinter.Tk):
 
@@ -386,6 +386,7 @@ class Confirmation(tkinter.Frame):
     docjoindict = {}
     docwhere = []
     docnames = {}
+    metricselection = []
 
     # Initialize the starting frame
     def __init__(self, parent, controller):
@@ -398,7 +399,7 @@ class Confirmation(tkinter.Frame):
         doclabel.grid(column=0, row=0, sticky='nesw', pady=5, padx=5, columnspan=3)
 
         metriclabel = tkinter.Label(self, text='\nPlease choose your metrics:')
-        metriclabel.grid(column=0,row=1)
+        metriclabel.grid(column=0, row=1)
 
         metricscrolly = tkinter.Scrollbar(self)
         metricscrolly.grid(column=0, row=2, sticky='ens')
@@ -409,17 +410,29 @@ class Confirmation(tkinter.Frame):
         restrictscrollx = tkinter.Scrollbar(self, orient='horizontal')
         restrictscrollx.grid(column=1, row=3, sticky='new', padx=10)
 
-        Confirmation.metriclistbox = tkinter.Listbox(self, height=37, width=70, selectmode='multiple', yscrollcommand=metricscrolly.set, xscrollcommand=metricscrollx.set, exportselection=0)
+        Confirmation.metriclistbox = tkinter.Listbox(self, height=27, width=70, selectmode='multiple', yscrollcommand=metricscrolly.set, xscrollcommand=metricscrollx.set, exportselection=0)
         Confirmation.metriclistbox.grid(column=0, row=2, padx=10, sticky='n')
 
         restrictlabel = tkinter.Label(self, text='\nPlease choose your restrictions:')
         restrictlabel.grid(column=1, row=1)
 
-        Confirmation.restrictlistbox = tkinter.Listbox(self, height=37, width=70, selectmode='multiple', yscrollcommand=restrictscrolly.set, xscrollcommand=restrictscrollx.set, exportselection=0)
+        Confirmation.restrictlistbox = tkinter.Listbox(self, height=27, width=70, selectmode='multiple', yscrollcommand=restrictscrolly.set, xscrollcommand=restrictscrollx.set, exportselection=0)
         Confirmation.restrictlistbox.grid(column=1, row=2, padx=10, sticky='n')
 
         continuebutton = tkinter.Button(self, text='Continue', command=lambda: self.cont(controller))
         continuebutton.grid(column=2, row=2, padx=80, ipadx=10, ipady=10)
+
+        Confirmation.metricsql = tkinter.StringVar()
+
+        metricinfolabel = tkinter.Label(self, relief='groove', width=122, height=11, textvariable=Confirmation.metricsql)
+        metricinfolabel.grid(column=0, row=4, columnspan=2, pady=5, padx=5)
+
+        metricscrolly.config(command=Confirmation.metriclistbox.yview)
+        metricscrollx.config(command=Confirmation.metriclistbox.xview)
+        restrictscrolly.config(command=Confirmation.restrictlistbox.yview)
+        restrictscrollx.config(command=Confirmation.restrictlistbox.xview)
+
+        Confirmation.metriclistbox.bind('<<ListboxSelect>>', self.updatemetricsql)
 
     def populate(self, valdocs, docqueries, controller):
 
@@ -521,9 +534,27 @@ class Confirmation(tkinter.Frame):
         Confirmation.docjoindict = {}
         Confirmation.docwhere = []
         Confirmation.docwhereand = {}
+        Confirmation.metricselection = []
+        Confirmation.metricsql.set('')
+
         Confirmation.valdocs.remove(Confirmation.valdocs[0])
 
         Confirmation.populate(Confirmation, Confirmation.valdocs, Confirmation.docqueries, controller)
+
+    def updatemetricsql(self, event):
+
+        for i in Confirmation.metriclistbox.curselection():
+            if i not in Confirmation.metricselection:
+                if len(Confirmation.docaggdict[Confirmation.docaggs[i]]) > 120:
+                    Confirmation.metricsql.set(Confirmation.docaggdict[Confirmation.docaggs[i]][:120] + '...')
+                else:
+                    Confirmation.metricsql.set(Confirmation.docaggdict[Confirmation.docaggs[i]])
+
+                Confirmation.metricselection.append(i)
+
+        for j in Confirmation.metricselection:
+            if j not in Confirmation.metriclistbox.curselection():
+                Confirmation.metricselection.remove(j)
 
 
 class Settings(tkinter.Frame):
@@ -608,7 +639,7 @@ class Settings(tkinter.Frame):
         Settings.endingjointext = tkinter.Text(self, height=1, width=35)
         Settings.endingjointext.grid(row=5, column=2, padx=2)
 
-        Settings.dropcomparisonlabel = tkinter.Label(self, text='Comparison Metric:')
+        Settings.dropcomparisonlabel = tkinter.Label(self, text='Comparison Metrics(Separated by commas, no spaces):')
         Settings.dropcomparisonlabel.grid(row=6, column=2, sticky='w', padx=20)
 
         Settings.dropcomparisontext = tkinter.Text(self, height=1, width=35)
@@ -847,8 +878,11 @@ class RunFrame(tkinter.Frame):
                 for k in variables.removeddrops:
                     del variables.drops[i][variables.drops[i].index(k)]
             # ---------------------------------------------------------------------------------------------------------------------------
-        for i in removeddocs:
-            variables.valdocs.remove(i)
+        try:
+            for i in removeddocs:
+                variables.valdocs.remove(i)
+        except ValueError:
+            pass
 
         Log.writetolog(Log, 'Queries completed with ' + str(variables.errorcount) + ' errors.\n\tErrored documents are: ' + str(variables.errordocs) + '.')
         # ----------------------------------------------------------------------------------------------------------
