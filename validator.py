@@ -938,9 +938,9 @@ class RunFrame(tkinter.Frame):
             RunFrame.progress2.set('Creating sheet for ' + str(variables.docnames[i]))
             RunFrame.progresslabel2.update()
             xlsxsheet.addsheet(xlsxsheet, workbook, variables.docnames[i], 'http://' + host + '/index.html?id=' + str(i), str(variables.docstartdate[i]) + ' - ' + str(variables.docenddate[i]), variables.doclastmodified[i], variables.docaggs[i], docresults[i], dataset, variables.finalqueries[i], image)
-            # webbrowser.open_new_tab(host + '/index.html?id=' + str(i))
             Log.writetolog(Log, 'Excel sheet for ' + str(i) + ' successful.')
             time.sleep(2)
+            
             # Adding drop investigations ---------------------------------------------------------------------------------------------
             if i in variables.drops:
                 for j in variables.drops[i]:

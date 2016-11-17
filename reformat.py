@@ -186,6 +186,7 @@ class SectionStrip:
             while True:
 
                 if pos >= len(subselect):
+                    aggfinal.append(temp)
                     break
                 elif subselect[pos] == '(':
                     parencount += 1
