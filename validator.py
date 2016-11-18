@@ -44,7 +44,7 @@ class ValidationMain(tkinter.Tk):
         file.write('')
         file.close()
 
-        Log.writetolog(Log, 'Successfully purged prior log and started a new one.')
+        Log.writetolog(Log, 'Starting a new validation. Removed prior log.')
 
     # Define show_frame: this takes frames and moves them to the front.
     def show_frame(self, cont):
@@ -634,20 +634,22 @@ class Settings(tkinter.Frame):
         Settings.startingjointext.grid(row=3, column=2, padx=20)
 
         endingjoinlabel = tkinter.Label(self, text='Ending Joins (3-part name, case-sensitive):')
-        endingjoinlabel.grid(row=4, column=2, sticky='w', padx=20)
+        endingjoinlabel.grid(row=6, column=2, sticky='w', padx=20)
 
         Settings.endingjointext = tkinter.Text(self, height=1, width=35)
-        Settings.endingjointext.grid(row=5, column=2, padx=2)
+        Settings.endingjointext.grid(row=7, column=2, padx=2)
 
         Settings.dropcomparisonlabel = tkinter.Label(self, text='Comparison Metrics(Separated by commas, no spaces):')
-        Settings.dropcomparisonlabel.grid(row=6, column=2, sticky='w', padx=20)
+        Settings.dropcomparisonlabel.grid(row=10, column=2, sticky='w', padx=20)
 
         Settings.dropcomparisontext = tkinter.Text(self, height=1, width=35)
-        Settings.dropcomparisontext.grid(row=7, column=2, padx=2)
+        Settings.dropcomparisontext.grid(row=11, column=2, padx=2)
 
         # Testing Stuff
         Settings.urlstring = tkinter.StringVar()
         Settings.dbstring = tkinter.StringVar()
+        Settings.startjoinstring = tkinter.StringVar()
+        Settings.endjoinstring = tkinter.StringVar()
 
         testurlbutton = tkinter.Button(self, text='Test Connection', command=lambda: self.testurl())
         testurlbutton.grid(column=0, row=12, pady=15)
@@ -660,6 +662,18 @@ class Settings(tkinter.Frame):
 
         testdblabel = tkinter.Label(self, relief='groove', width=25, textvariable=Settings.dbstring)
         testdblabel.grid(column=1, row=13)
+
+        teststartjoinsbutton = tkinter.Button(self, text='Test Connection', command=lambda: self.teststartjoins())
+        teststartjoinsbutton.grid(column=2, row=4)
+
+        teststartjoinlabel = tkinter.Label(self, relief='groove', width=40, textvariable=Settings.startjoinstring)
+        teststartjoinlabel.grid(column=2, row=5)
+
+        testendjoinsbutton = tkinter.Button(self, text='Test Connection', command=lambda: self.testendjoins())
+        testendjoinsbutton.grid(column=2, row=8)
+
+        testendjoinlabel = tkinter.Label(self, relief='groove', width=40, textvariable=Settings.endjoinstring)
+        testendjoinlabel.grid(column=2, row=9)
 
         # Other Stuff
         applybutton = tkinter.Button(self, text='Apply', command=lambda: self.applysettings(controller))
@@ -732,6 +746,65 @@ class Settings(tkinter.Frame):
         except UnboundLocalError:
             Settings.dbstring.set('Connection unsuccessful')
 
+    def teststartjoins(self):
+        root = ET.parse('config.xml')
+        startjoins = root.find('./AdvancedSettings/StartingJoins').text
+        startjoinlist = []
+        temp = ''
+        errorflag = False
+
+        try:
+            for i in startjoins:
+                if i != ',':
+                    temp += i
+                else:
+                    startjoinlist.append(temp)
+                    temp = ''
+            startjoinlist.append(temp)
+            temp = ''
+        except TypeError:
+            pass
+
+        for i in startjoinlist:
+            try:
+                database.Query.runquery(database, 'SELECT 1 AS Test FROM ' + i + ' WITH (NoLock)')
+            except pypyodbc.ProgrammingError:
+                Settings.startjoinstring.set(str(i) + ' has failed.')
+                errorflag = True
+                break
+
+        if errorflag is False:
+            Settings.startjoinstring.set('All tables ran successfully.')
+
+    def testendjoins(self):
+        root = ET.parse('config.xml')
+        endjoins = root.find('./AdvancedSettings/EndingJoins').text
+        endjoinlist = []
+        temp = ''
+        errorflag = False
+
+        try:
+            for i in endjoins:
+                if i != ',':
+                    temp += i
+                else:
+                    endjoinlist.append(temp)
+                    temp = ''
+            endjoinlist.append(temp)
+            temp = ''
+        except TypeError:
+            pass
+
+        for i in endjoinlist:
+            try:
+                database.Query.runquery(database, 'SELECT 1 AS Test FROM ' + i + ' WITH (NoLock)')
+            except pypyodbc.ProgrammingError:
+                Settings.endjoinstring.set(str(i) + ' has failed.')
+                errorflag = True
+                break
+
+        if errorflag is False:
+            Settings.endjoinstring.set('All tables ran successfully.')
 
 class RunFrame(tkinter.Frame):
 
@@ -940,17 +1013,17 @@ class RunFrame(tkinter.Frame):
             xlsxsheet.addsheet(xlsxsheet, workbook, variables.docnames[i], 'http://' + host + '/index.html?id=' + str(i), str(variables.docstartdate[i]) + ' - ' + str(variables.docenddate[i]), variables.doclastmodified[i], variables.docaggs[i], docresults[i], dataset, variables.finalqueries[i], image)
             Log.writetolog(Log, 'Excel sheet for ' + str(i) + ' successful.')
             time.sleep(2)
-            
-            # Adding drop investigations ---------------------------------------------------------------------------------------------
+        # Adding drop investigations ---------------------------------------------------------------------------------------------
+        for i in variables.valdocs:
             if i in variables.drops:
                 for j in variables.drops[i]:
                     Log.writetolog(Log, 'Attempting to create drop excel sheet for: ' + str(variables.docnames[i]) + ': ' + str(variables.drops[i]))
                     RunFrame.progress2.set('Creating sheet for drop investigations for steps ' + str(j[0]) + ' and ' + str(j[1]))
                     RunFrame.progresslabel2.update()
-                    xlsxsheet.adddropinvest(xlsxsheet, workbook, variables.dropinvestigationcolumns[i][j[0], j[1]], variables.dropinvestigations[i][(j[0], j[1])], variables.dropinvestigationqueries[i][(j[0], j[1])])
-                    Log.writetolog(Log, 'Drop sheet for ' + str(i) + ' successful.')
+                    xlsxsheet.adddropinvest(xlsxsheet, workbook, variables.dropinvestigationcolumns[i][j[0], j[1]], variables.dropinvestigations[i][(j[0], j[1])], variables.dropinvestigationqueries[i][(j[0], j[1])], variables.docnames[i], str(j[0]) + ', ' + str(j[1]))
+                    Log.writetolog(Log, 'Drop sheet for ' + str(variables.docnames[i]) + ' successful.')
                     time.sleep(2)
-            # ------------------------------------------------------------------------------------------------------------------------
+        # ------------------------------------------------------------------------------------------------------------------------
         workbook.close()
 
         RunFrame.progress2.set('')
@@ -963,6 +1036,8 @@ class RunFrame(tkinter.Frame):
         else:
             RunFrame.progress1.set('Documents completed with ' + str(variables.errorcount) + ' error(s). Please review the log for details.')
             RunFrame.progresslabel1.update()
+
+        Log.writetolog(Log, 'Validation complete.')
 
 # Run the program
 app = ValidationMain()

@@ -95,7 +95,7 @@ class xlsxsheet:
             worksheet.insert_image(1, width + 3, image, {'x_scale': 0.25, 'y_scale': 0.25})
 
     # Drop investigation xlsx sheet
-    def adddropinvest(self, workbook, columns, drop, sql):
+    def adddropinvest(self, workbook, columns, drop, sql, docname, steps):
 
         worksheet = workbook.add_worksheet('Drop Investigation ' + str(xlsxsheet.dropcount))
         xlsxsheet.dropcount += 1
@@ -105,8 +105,9 @@ class xlsxsheet:
         datagridformat = workbook.add_format({'fg_color': '#e2efda', 'border': 1, 'bold': True})
         textboxoption = {'width': 1000, 'height': 20000}
 
+        worksheet.write(1, 1, docname + ': ' + steps)
         # Add in the column names --------------------------------------------------------------------
-        n = 1
+        n = 2
         m = 1
 
         for i in columns:
