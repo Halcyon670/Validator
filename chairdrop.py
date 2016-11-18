@@ -270,6 +270,9 @@ class reformat:
                 temp = ''
                 tempflag = False
 
+        if join[-1::] == ')' and temp != '':
+            temppred += temp
+
         predlist.append(temppred)
         # --------------------------------------------------------------------------------
         # Now associate the predicates with the proper tables ----------------------------

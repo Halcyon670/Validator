@@ -104,10 +104,13 @@ class xlsxsheet:
         metricnameformat = workbook.add_format({'fg_color': '#ddebf7', 'underline': True, 'bold': True, 'border': 1})
         datagridformat = workbook.add_format({'fg_color': '#e2efda', 'border': 1, 'bold': True})
         textboxoption = {'width': 1000, 'height': 20000}
+        nameformat = workbook.add_format({'bold': True, 'underline': True, 'font_color': 'blue', 'font_size': 11})
 
-        worksheet.write(1, 1, docname + ': ' + steps)
+        worksheet.write(0, 1, docname + ': ' + steps, nameformat)
+        worksheet.write(1, 1, 'Steps ' + steps, nameformat)
+
         # Add in the column names --------------------------------------------------------------------
-        n = 2
+        n = 3
         m = 1
 
         for i in columns:
