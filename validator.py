@@ -911,43 +911,51 @@ class RunFrame(tkinter.Frame):
                 variables.dropinvestigationcolumns[i] = {}
                 variables.removeddrops = []
                 for j in variables.drops[i]:
-                    sql = Other.removewhitespace(Other, variables.finalqueries[i])
-                    unions = chairdrop.reformat.findunions(chairdrop, sql, j[0], j[1])
-                    queries = chairdrop.reformat.findqueries(chairdrop, sql, unions)
-                    newqueries = chairdrop.reformat.removestep(chairdrop, queries)
-                    preddict = chairdrop.reformat.standid(chairdrop, newqueries)
-
-                    datagrid = ['Drops']
-                    for k in preddict[[preddict['A']][0]]:
-                        datagrid.append(k)
-                    for k in variables.docaggs[i]:
-                        datagrid.append(k)
-                    for k in preddict[[preddict['B']][0]]:
-                        datagrid.append(k)
-                    for k in variables.docaggs[i]:
-                        datagrid.append(k)
-                    variables.dropinvestigationcolumns[i][j[0], j[1]] = datagrid
-
-                    newerqueries = chairdrop.reformat.changeab(chairdrop, newqueries, preddict)
-                    finalquery = chairdrop.reformat.combinequeries(chairdrop, newerqueries, preddict)
-                    variables.dropinvestigationqueries[i][(j[0], j[1])] = finalquery
-
-                    Log.writetolog(Log, 'Now running investigation for ' + str(i) + ': ' + str(j))
-                    Log.writetolog(Log, 'Here\'s the query for ' + str(i) + ': ' + str(j) + ': ' + finalquery)
-
                     try:
-                        temp = database.Query.runquery(Confirmation, finalquery)
-                        variables.dropinvestigations[i][(j[0], j[1])] = temp
-                        Log.writetolog(Log, 'Investigation successfully run. Here are the results:\n\t' + str(temp))
-                        temp = ''
-                    except pypyodbc.ProgrammingError:
+                        sql = Other.removewhitespace(Other, variables.finalqueries[i])
+                        unions = chairdrop.reformat.findunions(chairdrop, sql, j[0], j[1])
+                        queries = chairdrop.reformat.findqueries(chairdrop, sql, unions)
+                        newqueries = chairdrop.reformat.removestep(chairdrop, queries)
+                        preddict = chairdrop.reformat.standid(chairdrop, newqueries)
+
+                        datagrid = ['Drops']
+                        for k in preddict[[preddict['A']][0]]:
+                            datagrid.append(k)
+                        for k in variables.docaggs[i]:
+                            datagrid.append(k)
+                        for k in preddict[[preddict['B']][0]]:
+                            datagrid.append(k)
+                        for k in variables.docaggs[i]:
+                            datagrid.append(k)
+                        variables.dropinvestigationcolumns[i][j[0], j[1]] = datagrid
+
+                        newerqueries = chairdrop.reformat.changeab(chairdrop, newqueries, preddict)
+                        finalquery = chairdrop.reformat.combinequeries(chairdrop, newerqueries, preddict)
+                        variables.dropinvestigationqueries[i][(j[0], j[1])] = finalquery
+
+                        Log.writetolog(Log, 'Now running investigation for ' + str(i) + ': ' + str(j))
+                        Log.writetolog(Log, 'Here\'s the query for ' + str(i) + ': ' + str(j) + ': ' + finalquery)
+
+                        try:
+                            temp = database.Query.runquery(Confirmation, finalquery)
+                            variables.dropinvestigations[i][(j[0], j[1])] = temp
+                            Log.writetolog(Log, 'Investigation successfully run. Here are the results:\n\t' + str(temp))
+                            temp = ''
+                        except pypyodbc.ProgrammingError:
+                            variables.errorcount += 1
+                            variables.removeddrops.append([j[0], j[1]])
+                            Log.writetolog(Log, 'ERROR: An error has occurred in this query. Please run the query in SQL Server for more information.')
+                        except pypyodbc.DatabaseError:
+                            variables.errorcount += 1
+                            variables.removeddrops.append([j[0], j[1]])
+                            Log.writetolog(Log, 'ERROR: Connection unsuccessful. Skipping document. Please run the query in SQL Server for more information')
+
+                    except IndexError:
                         variables.errorcount += 1
                         variables.removeddrops.append([j[0], j[1]])
-                        Log.writetolog(Log, 'ERROR: An error has occurred in this query. Please run the query in SQL Server for more information.')
-                    except pypyodbc.DatabaseError:
-                        variables.errorcount += 1
-                        variables.removeddrops.append([j[0], j[1]])
-                        Log.writetolog(Log, 'ERROR: Connection unsuccessful. Skipping document. Please run the query in SQL Server for more information')
+                        Log.writetolog(Log, 'ERROR: An error has occurred in formatting this query.')
+                        continue
+
                 for k in variables.removeddrops:
                     del variables.drops[i][variables.drops[i].index(k)]
             # ---------------------------------------------------------------------------------------------------------------------------
