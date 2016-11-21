@@ -1012,6 +1012,7 @@ class RunFrame(tkinter.Frame):
             RunFrame.progresslabel2.update()
             xlsxsheet.addsheet(xlsxsheet, workbook, variables.docnames[i], 'http://' + host + '/index.html?id=' + str(i), str(variables.docstartdate[i]) + ' - ' + str(variables.docenddate[i]), variables.doclastmodified[i], variables.docaggs[i], docresults[i], dataset, variables.finalqueries[i], image)
             Log.writetolog(Log, 'Excel sheet for ' + str(i) + ' successful.')
+            # os.remove(image)
             time.sleep(2)
         # Adding drop investigations ---------------------------------------------------------------------------------------------
         for i in variables.valdocs:

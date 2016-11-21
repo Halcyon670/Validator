@@ -106,7 +106,7 @@ class xlsxsheet:
         textboxoption = {'width': 1000, 'height': 20000}
         nameformat = workbook.add_format({'bold': True, 'underline': True, 'font_color': 'blue', 'font_size': 11})
 
-        worksheet.write(0, 1, docname + ': ' + steps, nameformat)
+        worksheet.write(0, 1, docname, nameformat)
         worksheet.write(1, 1, 'Steps ' + steps, nameformat)
 
         # Add in the column names --------------------------------------------------------------------
