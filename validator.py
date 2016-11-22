@@ -950,7 +950,7 @@ class RunFrame(tkinter.Frame):
                             variables.removeddrops.append([j[0], j[1]])
                             Log.writetolog(Log, 'ERROR: Connection unsuccessful. Skipping document. Please run the query in SQL Server for more information')
 
-                    except IndexError:
+                    except Exception:
                         variables.errorcount += 1
                         variables.removeddrops.append([j[0], j[1]])
                         Log.writetolog(Log, 'ERROR: An error has occurred in formatting this query.')
