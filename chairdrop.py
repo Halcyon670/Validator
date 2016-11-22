@@ -461,7 +461,10 @@ class DropCheck:
         for i in results:
             length = 0
             for j in i:
-                temp.append(j)
+                if j is None:
+                    temp.append(0)
+                else:
+                    temp.append(j)
                 length += 1
             tempsteps.append(temp)
             temp = []
