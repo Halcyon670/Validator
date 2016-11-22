@@ -859,7 +859,7 @@ class RunFrame(tkinter.Frame):
 
         host = root.find('./URLSettings/URL').text
 
-        # --------------------------------------------------
+        # ---------------------------------------------------------------------------------------------------
         # Run the queries in the database, and take note of any errors --------------------------------------
         for i in variables.removeddocs:
             variables.valdocs.remove(i)
@@ -869,6 +869,18 @@ class RunFrame(tkinter.Frame):
             RunFrame.progress2.set('Attempting to run in the database...')
             RunFrame.progresslabel1.update()
             RunFrame.progresslabel2.update()
+
+            # Make an exception for when there are no metrics. A document will not be created ---------------
+            if len(variables.docaggs[i]) == 0:
+                variables.errorcount += 1
+                variables.errordocs.append(i)
+                variables.removeddocs.append(i)
+                Log.writetolog(Log, 'ERROR: The query requires at least one valid metric.')
+                RunFrame.progress2.set('Error: No valid metric detected. Removing document and moving on.')
+                RunFrame.progresslabel2.update()
+                time.sleep(2)
+                continue
+            # -----------------------------------------------------------------------------------------------
 
             Log.writetolog(Log, 'Now attempting to run the query for ' + str(i) + ':')
             try:
