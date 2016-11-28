@@ -186,16 +186,14 @@ class SectionStrip:
             while True:
 
                 if pos >= len(subselect):
-                    if ' OVER(' not in temp and ' OVER (' not in temp:
-                        aggfinal.append(temp)
+                    aggfinal.append(temp)
                     break
                 elif subselect[pos] == '(':
                     parencount += 1
                 elif subselect[pos] == ')':
                     parencount -= 1
                 elif parencount == 0 and subselect[pos] == ',':
-                    if ' OVER(' not in temp and ' OVER (' not in temp:
-                        aggfinal.append(temp)
+                    aggfinal.append(temp)
                     break
 
                 temp += subselect[pos]
@@ -387,7 +385,6 @@ class Isolation:
                 elif readflag == 1:
                     while True:
                         if i[pos] in [' ', '*'] or (i[pos] == '(' and readflag == 1) or pos > len(i):
-                            pos += 1
                             break
                         else:
                             temp += i[pos]
@@ -418,6 +415,8 @@ class Isolation:
                                 asflag = 1
                             elif asflag == 1:
                                 break
+                    else:
+                        pos += 1
 
                     joinorder.append(temp)
                     break
