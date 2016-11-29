@@ -209,6 +209,11 @@ class reformat:
                 onflag = True
                 temp = ''
 
+            if tempflag is True and tableflag is False and onflag is not True and temp == 'AS' and table1 != '':
+                tableflag = True
+                tempflag = False
+                temp = ''
+
             if tempflag is True and tableflag is False and onflag is True:
                 if len(temp) > 2 and table1 not in temp:
                     table2temp = temp

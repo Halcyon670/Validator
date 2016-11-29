@@ -29,7 +29,7 @@ class Formatting:
                 word = word + i
             else:
                 for j in keyword:
-                    if word == j and sql[position] == '(': # Fix to make sure that aggregates have parens afterward
+                    if word.upper() == j and sql[position] == '(': # Fix to make sure that aggregates have parens afterward
                         worddict[position - len(j)] = j
                 word = ''
             position += 1

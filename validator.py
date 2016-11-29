@@ -911,7 +911,14 @@ class RunFrame(tkinter.Frame):
                 RunFrame.progress2.set('Run unsuccessful. Please see the log for details.')
                 RunFrame.progresslabel2.update()
                 time.sleep(3)
-
+            except pypyodbc.Error:
+                variables.errorcount += 1
+                variables.errordocs.append(i)
+                removeddocs.append(i)
+                Log.writetolog(Log, 'ERROR: An unknown error has occurred.')
+                RunFrame.progress2.set('Run unsuccessful. Please see the log for details.')
+                RunFrame.progresslabel2.update()
+                time.sleep(3)
             # Run drop investigations ----------------------------------------------------------------------------------------------------
             if i in variables.drops:
                 RunFrame.progress2.set('Drop(s) detected. Investigating...')
